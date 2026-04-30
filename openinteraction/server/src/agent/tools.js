@@ -76,9 +76,10 @@ export function executeTool(name, args, interviewId) {
   switch (name) {
     case 'record_insight': {
       const id = uuid();
+      const context = args.emotion ? `[emotion: ${args.emotion}] ${args.insight}` : args.insight;
       db.prepare(
         'INSERT INTO annotations (id, interview_id, category, label, severity, quote, context) VALUES (?, ?, ?, ?, ?, ?, ?)'
-      ).run(id, interviewId, 'insight', args.topic, null, args.quote || null, args.insight);
+      ).run(id, interviewId, 'insight', args.topic, null, args.quote || null, context);
       return { success: true, id };
     }
 
@@ -99,13 +100,16 @@ export function executeTool(name, args, interviewId) {
     }
 
     case 'end_interview': {
-      db.prepare(
-        "UPDATE interviews SET status = 'completed', ended_at = datetime('now') WHERE id = ?"
-      ).run(interviewId);
-      const id = uuid();
-      db.prepare(
-        'INSERT INTO annotations (id, interview_id, category, label, context) VALUES (?, ?, ?, ?, ?)'
-      ).run(id, interviewId, 'summary', 'interview_summary', args.summary);
+      const endTx = db.transaction(() => {
+        db.prepare(
+          "UPDATE interviews SET status = 'completed', ended_at = datetime('now') WHERE id = ?"
+        ).run(interviewId);
+        const id = uuid();
+        db.prepare(
+          'INSERT INTO annotations (id, interview_id, category, label, context) VALUES (?, ?, ?, ?, ?)'
+        ).run(id, interviewId, 'summary', 'interview_summary', `${args.reason}\n\n${args.summary}`);
+      });
+      endTx();
       return { success: true, summary: args.summary };
     }
 

@@ -57,7 +57,7 @@ describe('agent tools', () => {
     const annotations = db.prepare('SELECT * FROM annotations WHERE interview_id = ? AND category = ?').all(interviewId, 'insight');
     expect(annotations).toHaveLength(1);
     expect(annotations[0].label).toBe('search');
-    expect(annotations[0].context).toBe('搜索结果不准确');
+    expect(annotations[0].context).toBe('[emotion: frustrated] 搜索结果不准确');
   });
 
   it('extract_annotation saves to annotations table', () => {
@@ -87,6 +87,12 @@ describe('agent tools', () => {
     }, interviewId);
 
     expect(result.success).toBe(true);
+
+    const db = getDb();
+    const annotations = db.prepare('SELECT * FROM annotations WHERE interview_id = ? AND category = ?').all(interviewId, 'topic_coverage');
+    expect(annotations).toHaveLength(1);
+    expect(annotations[0].label).toBe('search_experience:full');
+    expect(annotations[0].context).toBe('用户充分讨论了搜索体验');
   });
 
   it('end_interview updates interview status', () => {
