@@ -1,6 +1,5 @@
 export function buildSystemPrompt(project) {
   const topics = JSON.parse(project.core_topics || '[]');
-  const style = JSON.parse(project.style_guide || '{}');
 
   const topicsList = topics
     .map((t, i) => `${i + 1}. ${t.id} — ${t.description}`)
