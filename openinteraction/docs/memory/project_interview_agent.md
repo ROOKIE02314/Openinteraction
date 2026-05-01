@@ -35,9 +35,9 @@ type: project
 - Task 3: LLM Provider — 完成，提交 `10b4cef`
 - Task 4: Agent Tools — 完成，提交 `63829dc` + `adc8079`（code review修复）
 - Task 5: Prompt Builder — 完成，提交 `3abda76` + `dfe0e3c`（移除未使用变量）
+- Task 6: Conversation Manager — 完成，提交 `5da4588`
 
 **待完成的任务（按顺序）：**
-- Task 6: Conversation Manager（消息持久化）
 - Task 7: Interview Agent（核心agent循环）
 - Task 8: API Routes（访谈+聊天接口）
 - Task 9: Client Project Setup（React + Vite）
@@ -60,6 +60,7 @@ type: project
 - `adc8079` — fix: address code review issues in agent tools
 - `3abda76` — feat: add prompt builder for interview agent
 - `dfe0e3c` — fix: remove unused style variable in prompt builder
+- `5da4588` — feat: add conversation manager for message persistence
 
 ## 仓库信息
 
