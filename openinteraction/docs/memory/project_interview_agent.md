@@ -36,9 +36,9 @@ type: project
 - Task 4: Agent Tools — 完成，提交 `63829dc` + `adc8079`（code review修复）
 - Task 5: Prompt Builder — 完成，提交 `3abda76` + `dfe0e3c`（移除未使用变量）
 - Task 6: Conversation Manager — 完成，提交 `5da4588`
+- Task 7: Interview Agent — 完成，提交 `7560bc8`
 
 **待完成的任务（按顺序）：**
-- Task 7: Interview Agent（核心agent循环）
 - Task 8: API Routes（访谈+聊天接口）
 - Task 9: Client Project Setup（React + Vite）
 - Task 10: Landing Page
@@ -61,6 +61,7 @@ type: project
 - `3abda76` — feat: add prompt builder for interview agent
 - `dfe0e3c` — fix: remove unused style variable in prompt builder
 - `5da4588` — feat: add conversation manager for message persistence
+- `7560bc8` — feat: add interview agent with tool calling loop
 
 ## 仓库信息
 
