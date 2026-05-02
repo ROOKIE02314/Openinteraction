@@ -1,24 +1,42 @@
 import { useState, useRef, type FormEvent, type KeyboardEvent } from 'react';
-import './message-input.css';
 
-interface MessageInputProps {
-  onSend: (text: string) => void;
-  disabled?: boolean;
-}
+const S = {
+  container: { padding: '12px 16px', paddingTop: 0 },
+  frame: {
+    borderRadius: 10,
+    boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.1)',
+    background: '#1e1e1c',
+  },
+  inner: {
+    display: 'flex', alignItems: 'flex-end' as const,
+    gap: 8, padding: '8px 8px 8px 12px',
+  },
+  field: {
+    flex: 1, background: 'transparent', border: 'none',
+    color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif',
+    fontSize: 14, lineHeight: 1.55, resize: 'none' as const,
+    outline: 'none', minHeight: 24, maxHeight: 160,
+    overflowY: 'auto' as const,
+  },
+  btn: {
+    width: 32, height: 32, border: 'none', borderRadius: 6,
+    background: 'transparent', color: 'rgba(255,255,255,0.5)',
+    cursor: 'pointer', display: 'flex', alignItems: 'center',
+    justifyContent: 'center', flexShrink: 0,
+  },
+};
 
-function MessageInput({ onSend, disabled = false }: MessageInputProps) {
+function MessageInput({ onSend, disabled = false }: { onSend: (text: string) => void; disabled?: boolean }) {
   const [text, setText] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    const trimmed = text.trim();
-    if (!trimmed || disabled) return;
-    onSend(trimmed);
+    const t = text.trim();
+    if (!t || disabled) return;
+    onSend(t);
     setText('');
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-    }
+    if (taRef.current) taRef.current.style.height = 'auto';
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -29,19 +47,19 @@ function MessageInput({ onSend, disabled = false }: MessageInputProps) {
   };
 
   const handleInput = () => {
-    const el = textareaRef.current;
+    const el = taRef.current;
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
   };
 
   return (
-    <form className="msg-input-container" onSubmit={submit}>
-      <div className="msg-input-frame">
-        <div className="msg-input-inner">
+    <form style={S.container} onSubmit={submit}>
+      <div style={S.frame}>
+        <div style={S.inner}>
           <textarea
-            ref={textareaRef}
-            className="msg-input-field"
+            ref={taRef}
+            style={S.field}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -52,18 +70,15 @@ function MessageInput({ onSend, disabled = false }: MessageInputProps) {
           />
           <button
             type="submit"
-            className="msg-input-submit"
+            style={{
+              ...S.btn,
+              opacity: disabled || !text.trim() ? 0.3 : 1,
+            }}
             disabled={disabled || !text.trim()}
             aria-label="发送"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M2 8L14 2L10 14L8 10L6 8L2 8Z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              <path d="M2 8L14 2L10 14L8 10L6 8L2 8Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         </div>

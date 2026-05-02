@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import LandingPage from './pages/landing/LandingPage';
 import ChatPage from './pages/chat/ChatPage';
 import CompletePage from './pages/complete/CompletePage';
@@ -27,14 +27,11 @@ function HomePage() {
         fontSize: 28,
         fontWeight: 600,
         color: 'rgba(255,255,255,0.85)',
-        lineHeight: 1.3,
-        letterSpacing: '-0.02em',
       }}>产品体验访谈</h1>
       <p style={{
         color: 'rgba(255,255,255,0.5)',
         fontSize: 15,
         lineHeight: 1.65,
-        maxWidth: 320,
       }}>通过自然对话收集用户反馈的 AI 访谈系统</p>
       <p style={{
         color: 'rgba(255,255,255,0.4)',
@@ -47,16 +44,25 @@ function HomePage() {
   );
 }
 
-function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/interview/:token" element={<LandingPage />} />
-      <Route path="/interview/:token/chat" element={<ChatPage />} />
-      <Route path="/interview/:token/complete" element={<CompletePage />} />
-      <Route path="*" element={<HomePage />} />
-    </Routes>
-  );
-}
-
-export default App;
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <HomePage />,
+  },
+  {
+    path: '/interview/:token',
+    element: <LandingPage />,
+  },
+  {
+    path: '/interview/:token/chat',
+    element: <ChatPage />,
+  },
+  {
+    path: '/interview/:token/complete',
+    element: <CompletePage />,
+  },
+  {
+    path: '*',
+    element: <HomePage />,
+  },
+]);
