@@ -1,0 +1,83 @@
+.landing {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.landing-card {
+  max-width: 440px;
+  width: 100%;
+  padding: var(--space-12) var(--space-8);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.landing-card-icon {
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: var(--space-2);
+  color: var(--color-white-40);
+  user-select: none;
+}
+
+.landing-title {
+  margin-bottom: var(--space-2);
+}
+
+.landing-desc {
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.landing-duration {
+  color: var(--color-white-40);
+  font-size: 13px;
+  margin-top: var(--space-2);
+}
+
+.landing-btn {
+  margin-top: var(--space-6);
+  padding: 12px 48px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-white-85);
+  color: var(--color-black);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-out-expo),
+    opacity var(--duration-fast) var(--ease-out-expo);
+}
+
+.landing-btn:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+.landing-btn:active {
+  transform: scale(0.98);
+}
+
+.landing-card--error {
+  gap: var(--space-3);
+}
+
+.landing-loader {
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -1,0 +1,9 @@
+.surface-card {
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    var(--border-thin);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+}
