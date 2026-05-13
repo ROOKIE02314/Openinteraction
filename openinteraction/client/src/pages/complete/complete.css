@@ -3,46 +3,50 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-4);
-  background: var(--color-black);
+  padding: var(--space-6);
 }
 
 .complete-card {
-  max-width: 440px;
+  max-width: 460px;
   width: 100%;
-  padding: var(--space-12) var(--space-8);
+  padding: var(--space-10) var(--space-8);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-4);
-  background: var(--color-surface-raised);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-modal);
-  backdrop-filter: var(--blur-glass);
-  -webkit-backdrop-filter: var(--blur-glass);
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-bubble);
+  backdrop-filter: var(--blur-input);
+  -webkit-backdrop-filter: var(--blur-input);
 }
 
 .complete-icon {
+  color: var(--color-text-primary);
   margin-bottom: var(--space-2);
 }
 
 .complete-title {
   font-size: 28px;
   font-weight: var(--font-weight-semibold);
-  color: var(--color-white-85);
+  color: var(--color-text-primary);
   line-height: 1.3;
   letter-spacing: var(--letter-spacing-tight);
 }
 
 .complete-desc {
-  color: var(--color-white-50);
+  color: var(--color-text-secondary);
   font-size: 15px;
   line-height: 1.65;
 }
 
 .complete-sub {
-  color: var(--color-white-40);
-  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  opacity: 0.8;
   margin-top: var(--space-2);
 }

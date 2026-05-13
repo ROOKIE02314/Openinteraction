@@ -1,46 +1,59 @@
 :root {
-  /* === 颜色：基底 === */
-  --color-black: #000000;
-  --color-surface: #1e1e1c;
-  --color-surface-raised: rgba(34, 34, 34, 0.85);
-  --color-surface-floating: rgba(0, 0, 0, 0.75);
-  --color-surface-hover: rgba(255, 255, 255, 0.06);
+  /* === 底色：莫兰迪冷灰渐变（对齐模板 User Interview Interface） === */
+  --color-bg: #D6D8D7;
+  --color-bg-deep: #C4C7C5;
+  --bg-gradient: linear-gradient(145deg, var(--color-bg) 0%, var(--color-bg-deep) 100%);
 
-  /* === 颜色：白色透明度层级（variant.com 18 级的精简） === */
-  --color-white: #ffffff;
-  --color-white-85: rgba(255, 255, 255, 0.85);
-  --color-white-50: rgba(255, 255, 255, 0.5);
-  --color-white-40: rgba(255, 255, 255, 0.4);
-  --color-white-12: rgba(255, 255, 255, 0.12);
-  --color-white-10: rgba(255, 255, 255, 0.1);
-  --color-white-07: rgba(255, 255, 255, 0.07);
-  --color-white-05: rgba(255, 255, 255, 0.05);
+  /* === 文字：深青灰 Morandi === */
+  --color-text-primary: #4A4D4C;
+  --color-text-secondary: #7A7E7D;
+  --color-text-strong: #333333;          /* 用户气泡里的加重文字 */
 
-  /* === 颜色：品牌强调色 === */
-  --color-blue-primary: #2688f9;
-  --color-blue-brand: rgb(37, 99, 235);
+  /* === 白玻璃层（模板统一的 glass-morphism 核心） === */
+  --color-glass: rgba(255, 255, 255, 0.22);       /* 默认气泡 / 卡 / 输入框底 */
+  --color-glass-hover: rgba(255, 255, 255, 0.28); /* 气泡 hover */
+  --color-glass-user: rgba(255, 255, 255, 0.4);   /* 用户气泡 / 发送按钮底 */
+  --color-glass-input-focus: rgba(255, 255, 255, 0.35);
+  --color-glass-tag: rgba(255, 255, 255, 0.3);    /* metadata tag */
+  --color-glass-border: rgba(255, 255, 255, 0.5);
+  --color-glass-highlight: rgba(255, 255, 255, 0.4);
+  --color-glass-inset-soft: rgba(255, 255, 255, 0.5);
+  --color-glass-inset-strong: rgba(255, 255, 255, 0.7);
 
-  /* === 边框（0.5px 描边的标准实现） === */
-  --border-thin: inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
-  --border-hover: inset 0 0 0 0.5px rgba(255, 255, 255, 0.2);
+  /* === action 按钮 === */
+  --color-action-bg: rgba(255, 255, 255, 0.3);
+  --color-action-bg-hover: rgba(255, 255, 255, 0.5);
+  --color-action-bg-primary: rgba(255, 255, 255, 0.6);
 
-  /* === 阴影 === */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.25);
-  --shadow-modal:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  /* === 指示点 / 高光 === */
+  --color-dot: rgba(255, 255, 255, 0.6);
+  --accent-glow: rgba(255, 255, 255, 0.3);
+
+  /* === 阴影（浅底柔投影 + inset 白高光） === */
+  --shadow-bubble:
+    0 4px 12px rgba(0, 0, 0, 0.02),
+    inset 0 1px 1px var(--color-glass-highlight);
+  --shadow-input:
+    0 10px 30px rgba(0, 0, 0, 0.05),
+    inset 0 1px 2px var(--color-glass-inset-soft);
+  --shadow-input-focus:
+    0 15px 40px rgba(0, 0, 0, 0.08),
+    inset 0 1px 2px var(--color-glass-inset-strong);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.02);
+  --shadow-dot: 0 0 10px var(--accent-glow);
 
   /* === 圆角 === */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
-  --radius-xl: 14px;
+  --radius-sm: 10px;
+  --radius-md: 20px;
+  --radius-bubble: 28px;
+  --radius-bubble-corner: 4px;   /* 气泡小尖角 */
+  --radius-pill: 40px;
+  --radius-circle: 50%;
 
   /* === 模糊 === */
-  --blur-glass: blur(20px);
-  --blur-glass-strong: blur(25px);
+  --blur-bubble: blur(16px);
+  --blur-input: blur(20px);
+  --blur-card: blur(10px);
 
   /* === 间距（4/8px 网格） === */
   --space-1: 4px;
@@ -50,21 +63,20 @@
   --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
+  --space-10: 40px;
   --space-12: 48px;
 
   /* === 动效 === */
-  --duration-fast: 120ms;
+  --duration-fast: 200ms;
   --duration-normal: 250ms;
-  --duration-slow: 400ms;
-  --ease-standard: cubic-bezier(0.175, 0.885, 0.32, 1);
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-standard: ease;
 
   /* === 字体 === */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
-  --letter-spacing-base: 0.01em;
-  --letter-spacing-tight: -0.02em;
+  --letter-spacing-base: 0.02em;
+  --letter-spacing-wide: 0.05em;
+  --letter-spacing-tight: -0.01em;
 }

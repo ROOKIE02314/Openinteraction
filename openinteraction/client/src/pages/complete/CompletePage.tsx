@@ -6,8 +6,8 @@ function CompletePage() {
       <div className="complete-card">
         <div className="complete-icon" aria-hidden="true">
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="16" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-            <path d="M14 20.5L18.5 25L26 17" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="20" cy="20" r="16" stroke="currentColor" strokeOpacity="0.25" strokeWidth="1" />
+            <path d="M14 20.5L18.5 25L26 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <h1 className="complete-title">聊完啦，谢谢你！</h1>
