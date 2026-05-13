@@ -9,6 +9,11 @@
   background: var(--color-surface);
 }
 
+.msg-input-frame:focus-within {
+  box-shadow: var(--border-hover);
+  transition: box-shadow var(--duration-fast) var(--ease-standard);
+}
+
 .msg-input-inner {
   display: flex;
   align-items: flex-end;
