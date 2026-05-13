@@ -1,30 +1,5 @@
 import { useState, useRef, type FormEvent, type KeyboardEvent } from 'react';
-
-const S = {
-  container: { padding: '12px 16px', paddingTop: 0 },
-  frame: {
-    borderRadius: 10,
-    boxShadow: 'inset 0 0 0 0.5px rgba(255,255,255,0.1)',
-    background: '#1e1e1c',
-  },
-  inner: {
-    display: 'flex', alignItems: 'flex-end' as const,
-    gap: 8, padding: '8px 8px 8px 12px',
-  },
-  field: {
-    flex: 1, background: 'transparent', border: 'none',
-    color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter, sans-serif',
-    fontSize: 14, lineHeight: 1.55, resize: 'none' as const,
-    outline: 'none', minHeight: 24, maxHeight: 160,
-    overflowY: 'auto' as const,
-  },
-  btn: {
-    width: 32, height: 32, border: 'none', borderRadius: 6,
-    background: 'transparent', color: 'rgba(255,255,255,0.5)',
-    cursor: 'pointer', display: 'flex', alignItems: 'center',
-    justifyContent: 'center', flexShrink: 0,
-  },
-};
+import './message-input.css';
 
 function MessageInput({ onSend, disabled = false }: { onSend: (text: string) => void; disabled?: boolean }) {
   const [text, setText] = useState('');
@@ -54,12 +29,12 @@ function MessageInput({ onSend, disabled = false }: { onSend: (text: string) => 
   };
 
   return (
-    <form style={S.container} onSubmit={submit}>
-      <div style={S.frame}>
-        <div style={S.inner}>
+    <form className="msg-input-container" onSubmit={submit}>
+      <div className="msg-input-frame">
+        <div className="msg-input-inner">
           <textarea
             ref={taRef}
-            style={S.field}
+            className="msg-input-field"
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -70,10 +45,7 @@ function MessageInput({ onSend, disabled = false }: { onSend: (text: string) => 
           />
           <button
             type="submit"
-            style={{
-              ...S.btn,
-              opacity: disabled || !text.trim() ? 0.3 : 1,
-            }}
+            className="msg-input-submit"
             disabled={disabled || !text.trim()}
             aria-label="发送"
           >
