@@ -4,6 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
+  background: var(--color-black);
 }
 
 .landing-card {
@@ -15,9 +16,18 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-4);
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
 }
 
-.landing-card-icon {
+.landing-card--error {
+  gap: var(--space-3);
+}
+
+.landing-icon {
   font-size: 40px;
   line-height: 1;
   margin-bottom: var(--space-2);
@@ -27,11 +37,19 @@
 
 .landing-title {
   margin-bottom: var(--space-2);
+  font-size: 28px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white-85);
+  line-height: 1.3;
+  letter-spacing: var(--letter-spacing-tight);
 }
 
 .landing-desc {
   max-width: 360px;
   margin: 0 auto;
+  color: var(--color-white-50);
+  font-size: 15px;
+  line-height: 1.65;
 }
 
 .landing-duration {
@@ -45,39 +63,38 @@
   padding: 12px 48px;
   border: none;
   border-radius: var(--radius-md);
-  background: var(--color-white-85);
-  color: var(--color-black);
+  background: transparent;
+  color: var(--color-white-85);
   font-family: var(--font-sans);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-base);
   cursor: pointer;
+  box-shadow: var(--border-thin);
   transition:
-    transform var(--duration-fast) var(--ease-out-expo),
-    opacity var(--duration-fast) var(--ease-out-expo);
+    background var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
 }
 
 .landing-btn:hover {
-  opacity: 0.9;
-  transform: scale(1.02);
+  background: var(--color-white-10);
+  box-shadow: var(--border-hover);
 }
 
 .landing-btn:active {
   transform: scale(0.98);
 }
 
-.landing-card--error {
-  gap: var(--space-3);
-}
-
 .landing-loader {
   width: 48px;
   height: 48px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-top-color: rgba(255, 255, 255, 0.4);
+  border: 2px solid var(--color-white-10);
+  border-top-color: var(--color-white-40);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: landingSpin 0.8s linear infinite;
 }
 
-@keyframes spin {
+@keyframes landingSpin {
   to { transform: rotate(360deg); }
 }
