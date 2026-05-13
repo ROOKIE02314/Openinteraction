@@ -60,7 +60,7 @@
 
 .landing-btn {
   margin-top: var(--space-6);
-  padding: 12px 48px;
+  padding: var(--space-3) var(--space-12);
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
