@@ -1,0 +1,55 @@
+.home {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  text-align: center;
+  background: var(--color-black);
+}
+
+.home-card {
+  max-width: 440px;
+  width: 100%;
+  padding: var(--space-12) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+}
+
+.home-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--color-white-40);
+  margin-bottom: var(--space-2);
+}
+
+.home-title {
+  font-size: 28px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white-85);
+  line-height: 1.3;
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.home-desc {
+  color: var(--color-white-50);
+  font-size: 15px;
+  line-height: 1.65;
+  max-width: 320px;
+}
+
+.home-hint {
+  color: var(--color-white-40);
+  font-size: 13px;
+  margin-top: var(--space-2);
+}
