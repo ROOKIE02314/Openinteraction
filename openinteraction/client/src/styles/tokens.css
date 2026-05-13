@@ -1,33 +1,70 @@
 :root {
+  /* === 颜色：基底 === */
   --color-black: #000000;
   --color-surface: #1e1e1c;
-  --color-surface-raised: rgba(51, 51, 51, 0.9);
+  --color-surface-raised: rgba(34, 34, 34, 0.85);
+  --color-surface-floating: rgba(0, 0, 0, 0.75);
   --color-surface-hover: rgba(255, 255, 255, 0.06);
 
+  /* === 颜色：白色透明度层级（variant.com 18 级的精简） === */
   --color-white: #ffffff;
   --color-white-85: rgba(255, 255, 255, 0.85);
   --color-white-50: rgba(255, 255, 255, 0.5);
   --color-white-40: rgba(255, 255, 255, 0.4);
+  --color-white-12: rgba(255, 255, 255, 0.12);
+  --color-white-10: rgba(255, 255, 255, 0.1);
   --color-white-07: rgba(255, 255, 255, 0.07);
+  --color-white-05: rgba(255, 255, 255, 0.05);
 
+  /* === 颜色：品牌强调色 === */
+  --color-blue-primary: #2688f9;
+  --color-blue-brand: rgb(37, 99, 235);
+
+  /* === 边框（0.5px 描边的标准实现） === */
   --border-thin: inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  --border-hover: inset 0 0 0 0.5px rgba(255, 255, 255, 0.2);
 
+  /* === 阴影 === */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.25);
+  --shadow-modal:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+
+  /* === 圆角 === */
   --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
 
+  /* === 模糊 === */
   --blur-glass: blur(20px);
+  --blur-glass-strong: blur(25px);
 
+  /* === 间距（4/8px 网格） === */
+  --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
   --space-12: 48px;
 
+  /* === 动效 === */
   --duration-fast: 120ms;
   --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.175, 0.885, 0.32, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.19, 1, 0.22, 1);
 
+  /* === 字体 === */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --letter-spacing-base: 0.01em;
+  --letter-spacing-tight: -0.02em;
 }
