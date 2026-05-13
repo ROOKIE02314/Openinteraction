@@ -22,14 +22,14 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--color-white-40);
 }
 
 .chat-header-title {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   color: var(--color-white-50);
-  letter-spacing: 0.01em;
+  letter-spacing: var(--letter-spacing-base);
 }
 
 .chat-error {
