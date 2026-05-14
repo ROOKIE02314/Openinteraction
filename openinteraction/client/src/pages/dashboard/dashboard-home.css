@@ -1,0 +1,77 @@
+.dh-title {
+  font-size: 28px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-6);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.dh-loading,
+.dh-error {
+  color: var(--color-text-secondary);
+}
+
+.dh-error {
+  color: #8a4a4a;
+}
+
+.dh-empty {
+  padding: var(--space-8);
+  color: var(--color-text-secondary);
+}
+
+.dh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-5);
+}
+
+.dh-card-link {
+  text-decoration: none;
+}
+
+.dh-card {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.dh-card-link:hover .dh-card {
+  background: var(--color-glass-hover);
+}
+
+.dh-card-name {
+  font-size: 18px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.dh-card-time {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
+
+.dh-card-stats {
+  display: flex;
+  gap: var(--space-5);
+  margin-top: var(--space-2);
+}
+
+.dh-stat-num {
+  font-size: 22px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.dh-stat-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
