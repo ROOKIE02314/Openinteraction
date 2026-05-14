@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { initDb, getDb } from '../../src/db/database.js';
 import { buildContext, estimateTokens, buildContextWithBudget } from '../../src/services/researchAssistant.js';
 import { v4 as uuid } from 'uuid';
@@ -132,5 +132,105 @@ describe('buildContextWithBudget', () => {
     expect(ctx.droppedCount).toBe(1);
     expect(ctx.context).toContain('## 访谈 #2');
     expect(ctx.context).not.toContain('## 访谈 #1');
+  });
+});
+
+import { ask } from '../../src/services/researchAssistant.js';
+
+describe('ask', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  function setupProject() {
+    const p1 = insertProject('搜索调研', '搜索引擎', [{ id: 'search', description: '搜索体验' }]);
+    const i1 = insertInterview(p1, '2026-05-01 10:00:00');
+    insertMessage(i1, 'user', '搜索经常找不到东西', '2026-05-01 10:00:01');
+    insertMessage(i1, 'assistant', '能举个例子吗？', '2026-05-01 10:00:02');
+    return p1;
+  }
+
+  it('returns answer and persists user+assistant turns on success', async () => {
+    const p1 = setupProject();
+    const mockLLM = { chat: vi.fn().mockResolvedValue({ content: '看起来用户主要抱怨搜索不准。', toolCalls: [] }) };
+
+    const result = await ask({ db: getDb(), projectId: p1, question: '主要痛点是？', llm: mockLLM });
+
+    expect(result.answer).toBe('看起来用户主要抱怨搜索不准。');
+    expect(result.truncated).toBe(false);
+    expect(result.dropped_count).toBe(0);
+
+    const rows = getDb().prepare('SELECT role, content FROM dashboard_chats WHERE project_id = ? ORDER BY created_at ASC').all(p1);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toEqual({ role: 'user', content: '主要痛点是？' });
+    expect(rows[1]).toEqual({ role: 'assistant', content: '看起来用户主要抱怨搜索不准。' });
+  });
+
+  it('passes the last 10 dashboard_chats turns as history', async () => {
+    const p1 = setupProject();
+    const db = getDb();
+    for (let n = 1; n <= 12; n++) {
+      db.prepare('INSERT INTO dashboard_chats (id, project_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)').run(
+        uuid(), p1, n % 2 === 0 ? 'assistant' : 'user', `old #${n}`, `2026-05-01 09:${String(n).padStart(2, '0')}:00`
+      );
+    }
+    const mockLLM = { chat: vi.fn().mockResolvedValue({ content: 'reply', toolCalls: [] }) };
+
+    await ask({ db, projectId: p1, question: '继续', llm: mockLLM });
+
+    const callArg = mockLLM.chat.mock.calls[0][0];
+    expect(callArg.messages.length).toBe(11); // 10 history + 1 user
+    expect(callArg.messages[0].content).toBe('old #3');
+    expect(callArg.messages[9].content).toBe('old #12');
+    expect(callArg.messages[10].content).toBe('继续');
+  });
+
+  it('does not write to dashboard_chats when LLM throws', async () => {
+    const p1 = setupProject();
+    const mockLLM = { chat: vi.fn().mockRejectedValue(new Error('boom')) };
+
+    await expect(
+      ask({ db: getDb(), projectId: p1, question: '主要痛点是？', llm: mockLLM })
+    ).rejects.toThrow('boom');
+
+    const count = getDb().prepare('SELECT COUNT(*) AS c FROM dashboard_chats WHERE project_id = ?').get(p1).c;
+    expect(count).toBe(0);
+  });
+
+  it('returns truncated:true and dropped_count when budget exceeded', async () => {
+    const p1 = insertProject('Big', 'p', []);
+    const padding = 'x'.repeat(3000);
+    const i1 = insertInterview(p1, '2026-05-01 10:00:00');
+    const i2 = insertInterview(p1, '2026-05-02 10:00:00');
+    insertMessage(i1, 'user', `OLDEST ${padding}`, '2026-05-01 10:00:01');
+    insertMessage(i2, 'user', `NEWEST ${padding}`, '2026-05-02 10:00:01');
+
+    const mockLLM = { chat: vi.fn().mockResolvedValue({ content: 'ok', toolCalls: [] }) };
+    const result = await ask({ db: getDb(), projectId: p1, question: '?', llm: mockLLM, budgetTokens: 1500 });
+
+    expect(result.truncated).toBe(true);
+    expect(result.dropped_count).toBeGreaterThanOrEqual(1);
+    const callArg = mockLLM.chat.mock.calls[0][0];
+    expect(callArg.system).toContain('已省略最早的');
+  });
+
+  it('throws an error with code NO_INTERVIEWS when project has no interviews', async () => {
+    const p1 = insertProject('Empty', 'p', []);
+    const mockLLM = { chat: vi.fn() };
+
+    await expect(
+      ask({ db: getDb(), projectId: p1, question: '?', llm: mockLLM })
+    ).rejects.toMatchObject({ code: 'NO_INTERVIEWS' });
+
+    expect(mockLLM.chat).not.toHaveBeenCalled();
+  });
+
+  it('throws an error with code NOT_FOUND when project does not exist', async () => {
+    const mockLLM = { chat: vi.fn() };
+    await expect(
+      ask({ db: getDb(), projectId: 'nope', question: '?', llm: mockLLM })
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
   });
 });

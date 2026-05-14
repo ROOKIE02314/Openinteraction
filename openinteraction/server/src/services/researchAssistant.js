@@ -1,3 +1,71 @@
+import { v4 as uuid } from 'uuid';
+
+const DEFAULT_BUDGET_TOKENS = 50000;
+const HISTORY_LIMIT = 10;
+
+const SYSTEM_PROMPT_BASE =
+  '你是一个用研助手。下面是项目「{name}」的全部访谈数据。' +
+  '基于这些数据回答用户问题，引用受访者原话时使用 `>` 引用块并标注来自第几次访谈（如 `访谈 #3`）。' +
+  '不要编造原文里没有的内容；如果数据中没有相关信息，明确说「现有访谈数据中未提及」。';
+
+function makeError(code, message) {
+  const err = new Error(message);
+  err.code = code;
+  return err;
+}
+
+function getRecentHistory(db, projectId) {
+  const rows = db.prepare(`
+    SELECT role, content FROM dashboard_chats
+    WHERE project_id = ?
+    ORDER BY created_at DESC
+    LIMIT ?
+  `).all(projectId, HISTORY_LIMIT);
+  return rows.reverse();
+}
+
+export async function ask({ db, projectId, question, llm, budgetTokens = DEFAULT_BUDGET_TOKENS }) {
+  const project = db.prepare('SELECT id, name FROM projects WHERE id = ?').get(projectId);
+  if (!project) throw makeError('NOT_FOUND', 'project not found');
+
+  const interviewCount = db.prepare(
+    'SELECT COUNT(*) AS c FROM interviews WHERE project_id = ?'
+  ).get(projectId).c;
+  if (interviewCount === 0) throw makeError('NO_INTERVIEWS', '该项目还没有访谈数据');
+
+  const ctx = buildContextWithBudget(db, projectId, budgetTokens);
+
+  let system = SYSTEM_PROMPT_BASE.replace('{name}', project.name) + '\n\n' + ctx.context;
+  if (ctx.droppedCount > 0) {
+    system += `\n\n注意：因数据量过大，已省略最早的 ${ctx.droppedCount} 次访谈。`;
+  }
+
+  const history = getRecentHistory(db, projectId);
+  const messages = [
+    ...history.map(h => ({ role: h.role, content: h.content })),
+    { role: 'user', content: question },
+  ];
+
+  const result = await llm.chat({ system, messages });
+  const answer = result.content;
+
+  const writeTx = db.transaction(() => {
+    db.prepare(
+      'INSERT INTO dashboard_chats (id, project_id, role, content) VALUES (?, ?, ?, ?)'
+    ).run(uuid(), projectId, 'user', question);
+    db.prepare(
+      'INSERT INTO dashboard_chats (id, project_id, role, content) VALUES (?, ?, ?, ?)'
+    ).run(uuid(), projectId, 'assistant', answer);
+  });
+  writeTx();
+
+  return {
+    answer,
+    truncated: ctx.droppedCount > 0,
+    dropped_count: ctx.droppedCount,
+  };
+}
+
 const KEYWORD_CATEGORIES = ['pain_point', 'feature_request', 'positive_feedback', 'insight'];
 
 function formatProjectIntro(project) {
