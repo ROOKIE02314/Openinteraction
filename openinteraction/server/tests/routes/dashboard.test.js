@@ -62,3 +62,52 @@ describe('Dashboard routes — list + metrics', () => {
     expect(res.body.interviews).toEqual([]);
   });
 });
+
+describe('Dashboard routes — chats CRUD', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('GET /api/dashboard/projects/:id/chats returns 404 when project missing', async () => {
+    await request(app).get('/api/dashboard/projects/nonexistent/chats').expect(404);
+  });
+
+  it('GET /api/dashboard/projects/:id/chats returns rows oldest first', async () => {
+    const db = getDb();
+    const pid = uuid();
+    db.prepare('INSERT INTO projects (id, name, product_context, core_topics) VALUES (?, ?, ?, ?)').run(pid, 'P', 'c', '[]');
+    db.prepare('INSERT INTO dashboard_chats (id, project_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)').run(
+      uuid(), pid, 'user', '一', '2026-05-01 10:00:00'
+    );
+    db.prepare('INSERT INTO dashboard_chats (id, project_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)').run(
+      uuid(), pid, 'assistant', '二', '2026-05-01 10:00:01'
+    );
+
+    const res = await request(app).get(`/api/dashboard/projects/${pid}/chats`).expect(200);
+    expect(res.body.map(r => r.content)).toEqual(['一', '二']);
+  });
+
+  it('DELETE /api/dashboard/projects/:id/chats returns 204 and clears rows', async () => {
+    const db = getDb();
+    const pid = uuid();
+    db.prepare('INSERT INTO projects (id, name, product_context, core_topics) VALUES (?, ?, ?, ?)').run(pid, 'P', 'c', '[]');
+    db.prepare('INSERT INTO dashboard_chats (id, project_id, role, content) VALUES (?, ?, ?, ?)').run(
+      uuid(), pid, 'user', 'hi'
+    );
+
+    await request(app).delete(`/api/dashboard/projects/${pid}/chats`).expect(204);
+
+    const count = db.prepare('SELECT COUNT(*) AS c FROM dashboard_chats WHERE project_id = ?').get(pid).c;
+    expect(count).toBe(0);
+  });
+
+  it('DELETE on a project with no chats is idempotent (204)', async () => {
+    const db = getDb();
+    const pid = uuid();
+    db.prepare('INSERT INTO projects (id, name, product_context, core_topics) VALUES (?, ?, ?, ?)').run(pid, 'P', 'c', '[]');
+
+    await request(app).delete(`/api/dashboard/projects/${pid}/chats`).expect(204);
+  });
+});
