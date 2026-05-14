@@ -66,7 +66,7 @@ function ProjectDetail() {
       setLastTruncation(resp.truncated ? resp.dropped_count : null);
     } catch (err: unknown) {
       setChatError(err instanceof Error ? err.message : '发送失败，请重试');
-      setChatMessages(chatMessages); // roll back the user bubble
+      setChatMessages(prev => prev.slice(0, prev.length - 1)); // roll back the user bubble
     } finally {
       setChatLoading(false);
     }
@@ -75,10 +75,14 @@ function ProjectDetail() {
   const handleClear = async () => {
     if (!id) return;
     if (!window.confirm('清空当前项目的所有问答？此操作不可撤销。')) return;
-    await clearDashboardChats(id);
-    setChatMessages([]);
-    setLastTruncation(null);
-    setChatError(null);
+    try {
+      await clearDashboardChats(id);
+      setChatMessages([]);
+      setLastTruncation(null);
+      setChatError(null);
+    } catch (err: unknown) {
+      setChatError(err instanceof Error ? err.message : '清空失败，请重试');
+    }
   };
 
   if (error) {

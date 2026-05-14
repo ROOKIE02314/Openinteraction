@@ -18,6 +18,7 @@ export function getProjectsOverview(db) {
   `).all();
 }
 
+// UI chip categories — excludes 'insight' (which has no user-facing label/count)
 const KEYWORD_CATEGORIES = ['pain_point', 'feature_request', 'positive_feedback'];
 
 export function getProjectMetrics(db, projectId) {

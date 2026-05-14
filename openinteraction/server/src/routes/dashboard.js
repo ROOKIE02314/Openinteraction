@@ -49,6 +49,9 @@ router.post('/projects/:id/ask', async (req, res) => {
   if (!question || typeof question !== 'string' || !question.trim()) {
     return res.status(400).json({ error: 'question is required' });
   }
+  if (question.length > 10000) {
+    return res.status(400).json({ error: 'question too long' });
+  }
 
   try {
     const llm = new LLMProvider();

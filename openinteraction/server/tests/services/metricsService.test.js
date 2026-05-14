@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { initDb, getDb } from '../../src/db/database.js';
-import { getProjectsOverview } from '../../src/services/metricsService.js';
+import { getProjectsOverview, getProjectMetrics } from '../../src/services/metricsService.js';
 import { v4 as uuid } from 'uuid';
 import fs from 'fs';
 
@@ -85,12 +85,10 @@ describe('getProjectMetrics', () => {
   });
 
   it('returns null when project not found', async () => {
-    const { getProjectMetrics } = await import('../../src/services/metricsService.js');
     expect(getProjectMetrics(getDb(), 'nonexistent')).toBeNull();
   });
 
   it('returns full metrics shape for a project with data', async () => {
-    const { getProjectMetrics } = await import('../../src/services/metricsService.js');
     const p1 = insertProject('搜索体验');
     const i1 = insertInterview(p1, 'completed', '2026-05-01 10:00:00', '2026-05-01 10:10:00');
     const i2 = insertInterview(p1, 'completed', '2026-05-02 10:00:00', '2026-05-02 10:20:00');
@@ -131,7 +129,6 @@ describe('getProjectMetrics', () => {
   });
 
   it('returns 0/0/null overview and empty keyword arrays for empty project', async () => {
-    const { getProjectMetrics } = await import('../../src/services/metricsService.js');
     const p1 = insertProject('Empty');
 
     const m = getProjectMetrics(getDb(), p1);
@@ -145,7 +142,6 @@ describe('getProjectMetrics', () => {
   });
 
   it('caps each keyword group at 10 entries sorted desc', async () => {
-    const { getProjectMetrics } = await import('../../src/services/metricsService.js');
     const p1 = insertProject('Big');
     const i1 = insertInterview(p1, 'completed', '2026-05-01 10:00:00', '2026-05-01 10:10:00');
     for (let n = 1; n <= 12; n++) {
