@@ -85,3 +85,63 @@ export function buildContext(db, projectId) {
     interviews,
   };
 }
+
+export function estimateTokens(text) {
+  return Math.ceil(text.length / 2);
+}
+
+function formatTranscriptsFromIndex(db, interviews, startIndex) {
+  const blocks = [];
+  for (let n = startIndex; n < interviews.length; n++) {
+    const iv = interviews[n];
+    const messages = db.prepare(`
+      SELECT role, content
+      FROM messages
+      WHERE interview_id = ? AND role IN ('user', 'assistant')
+      ORDER BY created_at ASC
+    `).all(iv.id);
+
+    if (messages.length === 0) continue;
+
+    const lines = [`## 访谈 #${n + 1} (${iv.started_at})`];
+    for (const m of messages) {
+      const speaker = m.role === 'user' ? '用户' : '助手';
+      lines.push(`${speaker}: ${m.content}`);
+    }
+    blocks.push(lines.join('\n'));
+  }
+  return blocks.length > 0 ? '# 访谈记录\n\n' + blocks.join('\n\n') : '';
+}
+
+export function buildContextWithBudget(db, projectId, budgetTokens) {
+  const base = buildContext(db, projectId);
+  if (!base) return null;
+
+  let droppedCount = 0;
+  const interviews = base.interviews;
+
+  while (droppedCount < interviews.length) {
+    const intro = formatProjectIntro(
+      db.prepare('SELECT id, name, product_context, core_topics FROM projects WHERE id = ?').get(projectId)
+    );
+    const annotationsBlock = formatAnnotations(db, projectId);
+    const transcriptsBlock = formatTranscriptsFromIndex(db, interviews, droppedCount);
+
+    const parts = [intro, annotationsBlock, transcriptsBlock].filter(Boolean);
+    const context = parts.join('\n\n---\n\n');
+
+    if (estimateTokens(context) <= budgetTokens) {
+      return { context, totalInterviews: interviews.length, droppedCount, interviews };
+    }
+    droppedCount++;
+  }
+
+  // All interviews dropped — return intro + annotations only
+  const project = db.prepare(
+    'SELECT id, name, product_context, core_topics FROM projects WHERE id = ?'
+  ).get(projectId);
+  const intro = formatProjectIntro(project);
+  const annotationsBlock = formatAnnotations(db, projectId);
+  const context = [intro, annotationsBlock].filter(Boolean).join('\n\n---\n\n');
+  return { context, totalInterviews: interviews.length, droppedCount: interviews.length, interviews };
+}

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { initDb, getDb } from '../../src/db/database.js';
-import { buildContext } from '../../src/services/researchAssistant.js';
+import { buildContext, estimateTokens, buildContextWithBudget } from '../../src/services/researchAssistant.js';
 import { v4 as uuid } from 'uuid';
 import fs from 'fs';
 
@@ -75,5 +75,62 @@ describe('buildContext', () => {
     expect(idxFirst).toBeGreaterThan(-1);
     expect(idxSecond).toBeGreaterThan(idxFirst);
     expect(ctx.context.indexOf('第一个访谈的话')).toBeLessThan(ctx.context.indexOf('第二个访谈的话'));
+  });
+});
+
+describe('estimateTokens', () => {
+  it('returns ceil(charCount/2)', () => {
+    expect(estimateTokens('')).toBe(0);
+    expect(estimateTokens('a')).toBe(1);
+    expect(estimateTokens('abc')).toBe(2);
+    expect(estimateTokens('搜索体验调研报告')).toBe(4);
+  });
+});
+
+describe('buildContextWithBudget', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('does not drop interviews when under budget', () => {
+    const p1 = insertProject('Small');
+    const i1 = insertInterview(p1, '2026-05-01 10:00:00');
+    insertMessage(i1, 'user', 'short msg', '2026-05-01 10:00:01');
+
+    const ctx = buildContextWithBudget(getDb(), p1, 100000);
+    expect(ctx.droppedCount).toBe(0);
+    expect(ctx.context).toContain('## 访谈 #1');
+  });
+
+  it('drops oldest interviews until under budget', () => {
+    const p1 = insertProject('Big');
+    const i1 = insertInterview(p1, '2026-05-01 10:00:00');
+    const i2 = insertInterview(p1, '2026-05-02 10:00:00');
+    const i3 = insertInterview(p1, '2026-05-03 10:00:00');
+    const padding = 'x'.repeat(2000);
+    insertMessage(i1, 'user', `OLDEST ${padding}`, '2026-05-01 10:00:01');
+    insertMessage(i2, 'user', `MIDDLE ${padding}`, '2026-05-02 10:00:01');
+    insertMessage(i3, 'user', `NEWEST ${padding}`, '2026-05-03 10:00:01');
+
+    const ctx = buildContextWithBudget(getDb(), p1, 1500);
+    expect(ctx.droppedCount).toBeGreaterThanOrEqual(1);
+    expect(ctx.context).not.toContain('OLDEST');
+    expect(ctx.context).toContain('NEWEST');
+  });
+
+  it('numbers remaining interviews starting at droppedCount+1', () => {
+    const p1 = insertProject('Renumber');
+    const i1 = insertInterview(p1, '2026-05-01 10:00:00');
+    const i2 = insertInterview(p1, '2026-05-02 10:00:00');
+    const padding = 'x'.repeat(2000);
+    insertMessage(i1, 'user', `OLDEST ${padding}`, '2026-05-01 10:00:01');
+    insertMessage(i2, 'user', `NEWEST ${padding}`, '2026-05-02 10:00:01');
+
+    const ctx = buildContextWithBudget(getDb(), p1, 1500);
+    expect(ctx.droppedCount).toBe(1);
+    expect(ctx.context).toContain('## 访谈 #2');
+    expect(ctx.context).not.toContain('## 访谈 #1');
   });
 });
