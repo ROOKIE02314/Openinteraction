@@ -4,6 +4,7 @@ import cors from 'cors';
 import { initDb } from './db/database.js';
 import interviewRoutes from './routes/interview.js';
 import chatRoutes from './routes/chat.js';
+import dashboardRoutes from './routes/dashboard.js';
 
 const dbPath = process.env.DB_PATH || './data/interview.db';
 initDb(dbPath);
@@ -18,6 +19,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/interview', interviewRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 const PORT = process.env.PORT || 3001;
 

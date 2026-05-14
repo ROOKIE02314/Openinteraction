@@ -149,3 +149,16 @@ describe('Dashboard routes — POST /ask', () => {
     expect(res.body.error).toContain('该项目还没有访谈数据');
   });
 });
+
+describe('Dashboard router mounted on app', () => {
+  it('GET /api/dashboard/projects via real app returns 200', async () => {
+    process.env.DB_PATH = TEST_DB;
+    process.env.LLM_API_KEY = 'test';
+    process.env.LLM_BASE_URL = 'http://localhost:9999';
+    const mod = await import('../../src/index.js');
+    initDb(TEST_DB);
+    await request(mod.default).get('/api/dashboard/projects').expect(200);
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+});
