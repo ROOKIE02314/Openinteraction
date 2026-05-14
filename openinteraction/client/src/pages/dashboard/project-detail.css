@@ -117,11 +117,6 @@
   margin: 0;
 }
 
-.pd-qa-placeholder {
-  padding: var(--space-6);
-  color: var(--color-text-secondary);
-}
-
 .pd-chip-groups {
   display: flex;
   flex-direction: column;
@@ -169,4 +164,41 @@
   font-size: 11px;
   color: var(--color-text-strong);
   font-weight: var(--font-weight-medium);
+}
+
+.pd-qa-card {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 180px);
+  min-height: 600px;
+  padding: var(--space-5);
+  gap: var(--space-3);
+}
+
+.pd-qa-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pd-qa-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pd-qa-truncation {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin: 0;
+}
+
+.pd-qa-error {
+  color: #8a4a4a;
+  background: var(--color-glass);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 13px;
 }

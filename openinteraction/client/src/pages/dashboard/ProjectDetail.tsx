@@ -2,7 +2,16 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../components/dashboard-layout/DashboardLayout';
 import SurfaceCard from '../../components/surface/SurfaceCard';
-import { getProjectMetrics, type ProjectMetrics, type KeywordEntry } from '../../api/client';
+import MessageList, { type Message } from '../../components/message-list/MessageList';
+import MessageInput from '../../components/message-input/MessageInput';
+import {
+  getProjectMetrics,
+  getDashboardChats,
+  askDashboard,
+  clearDashboardChats,
+  type ProjectMetrics,
+  type KeywordEntry,
+} from '../../api/client';
 import './project-detail.css';
 
 const KEYWORD_GROUPS: Array<{ key: keyof ProjectMetrics['keywords']; title: string }> = [
@@ -25,17 +34,51 @@ function ProjectDetail() {
   const [error, setError] = useState<string | null>(null);
   const [showAllInterviews, setShowAllInterviews] = useState(false);
   const [draftQuestion, setDraftQuestion] = useState('');
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [lastTruncation, setLastTruncation] = useState<number | null>(null);
 
   useEffect(() => {
     if (!id) return;
-    getProjectMetrics(id)
-      .then(setMetrics)
+    Promise.all([getProjectMetrics(id), getDashboardChats(id)])
+      .then(([m, chats]) => {
+        setMetrics(m);
+        setChatMessages(chats.map(c => ({ role: c.role, content: c.content })));
+      })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : '加载失败'));
   }, [id]);
 
   const handleChipClick = (label: string) => {
     setDraftQuestion(`为什么用户提到「${label}」？`);
-    document.getElementById('pd-qa-input')?.focus();
+    document.querySelector<HTMLTextAreaElement>('.pd-right .msg-input-field')?.focus();
+  };
+
+  const handleSend = async (text: string) => {
+    if (!id) return;
+    const next: Message[] = [...chatMessages, { role: 'user', content: text }];
+    setChatMessages(next);
+    setChatLoading(true);
+    setChatError(null);
+    try {
+      const resp = await askDashboard(id, text);
+      setChatMessages([...next, { role: 'assistant', content: resp.answer }]);
+      setLastTruncation(resp.truncated ? resp.dropped_count : null);
+    } catch (err: unknown) {
+      setChatError(err instanceof Error ? err.message : '发送失败，请重试');
+      setChatMessages(chatMessages); // roll back the user bubble
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const handleClear = async () => {
+    if (!id) return;
+    if (!window.confirm('清空当前项目的所有问答？此操作不可撤销。')) return;
+    await clearDashboardChats(id);
+    setChatMessages([]);
+    setLastTruncation(null);
+    setChatError(null);
   };
 
   if (error) {
@@ -56,6 +99,7 @@ function ProjectDetail() {
 
   const o = metrics.overview;
   const interviewsToShow = showAllInterviews ? metrics.interviews : metrics.interviews.slice(0, 5);
+  const noInterviews = metrics.overview.total === 0;
 
   return (
     <DashboardLayout breadcrumb={<><Link to="/dashboard">研究项目</Link> / {metrics.project.name}</>}>
@@ -154,9 +198,36 @@ function ProjectDetail() {
         </section>
 
         <section className="pd-right">
-          <SurfaceCard className="pd-qa-placeholder">
-            <p>AI 问答（下一步实现）</p>
-            <p className="pd-empty-text">草稿: {draftQuestion || '—'}</p>
+          <SurfaceCard className="pd-qa-card">
+            <header className="pd-qa-header">
+              <h2 className="pd-section-title">问研究助手</h2>
+              {chatMessages.length > 0 && (
+                <button
+                  type="button"
+                  className="pd-toggle-btn"
+                  onClick={handleClear}
+                >
+                  清空对话
+                </button>
+              )}
+            </header>
+            <div className="pd-qa-body">
+              {noInterviews ? (
+                <p className="pd-empty-text">该项目还没有访谈数据</p>
+              ) : (
+                <MessageList messages={chatMessages} loading={chatLoading} />
+              )}
+            </div>
+            {lastTruncation !== null && (
+              <p className="pd-qa-truncation">已基于最近 {metrics.interviews.length - lastTruncation} 次访谈回答</p>
+            )}
+            {chatError && <div className="pd-qa-error" role="alert">{chatError}</div>}
+            <MessageInput
+              onSend={handleSend}
+              disabled={noInterviews || chatLoading}
+              value={draftQuestion}
+              onValueChange={setDraftQuestion}
+            />
           </SurfaceCard>
         </section>
       </div>
