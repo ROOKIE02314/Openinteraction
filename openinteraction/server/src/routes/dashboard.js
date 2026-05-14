@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { getDb } from '../db/database.js';
 import { getProjectsOverview, getProjectMetrics } from '../services/metricsService.js';
+import { LLMProvider } from '../llm/provider.js';
+import { ask } from '../services/researchAssistant.js';
 
 const router = Router();
 
@@ -36,6 +38,32 @@ router.delete('/projects/:id/chats', (req, res) => {
   }
   db.prepare('DELETE FROM dashboard_chats WHERE project_id = ?').run(req.params.id);
   res.status(204).end();
+});
+
+router.post('/projects/:id/ask', async (req, res) => {
+  const db = getDb();
+  if (!projectExists(db, req.params.id)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  const { question } = req.body || {};
+  if (!question || typeof question !== 'string' || !question.trim()) {
+    return res.status(400).json({ error: 'question is required' });
+  }
+
+  try {
+    const llm = new LLMProvider();
+    const result = await ask({ db, projectId: req.params.id, question: question.trim(), llm });
+    res.json(result);
+  } catch (err) {
+    if (err.code === 'NO_INTERVIEWS') {
+      return res.status(400).json({ error: err.message });
+    }
+    if (err.code === 'NOT_FOUND') {
+      return res.status(404).json({ error: 'project not found' });
+    }
+    console.error('Dashboard ask error:', err);
+    res.status(502).json({ error: 'LLM 暂不可用，请稍后重试' });
+  }
 });
 
 export default router;

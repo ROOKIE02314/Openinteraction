@@ -111,3 +111,41 @@ describe('Dashboard routes — chats CRUD', () => {
     await request(app).delete(`/api/dashboard/projects/${pid}/chats`).expect(204);
   });
 });
+
+describe('Dashboard routes — POST /ask', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('returns 404 when project missing', async () => {
+    await request(app)
+      .post('/api/dashboard/projects/nonexistent/ask')
+      .send({ question: 'hi' })
+      .expect(404);
+  });
+
+  it('returns 400 when body missing question', async () => {
+    const db = getDb();
+    const pid = uuid();
+    db.prepare('INSERT INTO projects (id, name, product_context, core_topics) VALUES (?, ?, ?, ?)').run(pid, 'P', 'c', '[]');
+
+    await request(app)
+      .post(`/api/dashboard/projects/${pid}/ask`)
+      .send({})
+      .expect(400);
+  });
+
+  it('returns 400 with code NO_INTERVIEWS when project has no interviews', async () => {
+    const db = getDb();
+    const pid = uuid();
+    db.prepare('INSERT INTO projects (id, name, product_context, core_topics) VALUES (?, ?, ?, ?)').run(pid, 'P', 'c', '[]');
+
+    const res = await request(app)
+      .post(`/api/dashboard/projects/${pid}/ask`)
+      .send({ question: '?' })
+      .expect(400);
+    expect(res.body.error).toContain('该项目还没有访谈数据');
+  });
+});
