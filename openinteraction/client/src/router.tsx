@@ -3,6 +3,8 @@ import HomePage from './pages/home/HomePage';
 import LandingPage from './pages/landing/LandingPage';
 import ChatPage from './pages/chat/ChatPage';
 import CompletePage from './pages/complete/CompletePage';
+import DashboardHome from './pages/dashboard/DashboardHome';
+import ProjectDetail from './pages/dashboard/ProjectDetail';
 
 export const router = createBrowserRouter([
   {
@@ -20,6 +22,14 @@ export const router = createBrowserRouter([
   {
     path: '/interview/:token/complete',
     element: <CompletePage />,
+  },
+  {
+    path: '/dashboard',
+    element: <DashboardHome />,
+  },
+  {
+    path: '/dashboard/projects/:id',
+    element: <ProjectDetail />,
   },
   {
     path: '*',
