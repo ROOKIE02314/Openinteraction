@@ -2,8 +2,14 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../components/dashboard-layout/DashboardLayout';
 import SurfaceCard from '../../components/surface/SurfaceCard';
-import { getProjectMetrics, type ProjectMetrics } from '../../api/client';
+import { getProjectMetrics, type ProjectMetrics, type KeywordEntry } from '../../api/client';
 import './project-detail.css';
+
+const KEYWORD_GROUPS: Array<{ key: keyof ProjectMetrics['keywords']; title: string }> = [
+  { key: 'pain_point', title: '痛点' },
+  { key: 'feature_request', title: '功能诉求' },
+  { key: 'positive_feedback', title: '正向反馈' },
+];
 
 function formatRate(r: number | null): string {
   return r === null ? '—' : `${(r * 100).toFixed(0)}%`;
@@ -18,6 +24,7 @@ function ProjectDetail() {
   const [metrics, setMetrics] = useState<ProjectMetrics | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAllInterviews, setShowAllInterviews] = useState(false);
+  const [draftQuestion, setDraftQuestion] = useState('');
 
   useEffect(() => {
     if (!id) return;
@@ -25,6 +32,11 @@ function ProjectDetail() {
       .then(setMetrics)
       .catch((err: unknown) => setError(err instanceof Error ? err.message : '加载失败'));
   }, [id]);
+
+  const handleChipClick = (label: string) => {
+    setDraftQuestion(`为什么用户提到「${label}」？`);
+    document.getElementById('pd-qa-input')?.focus();
+  };
 
   if (error) {
     return (
@@ -71,6 +83,37 @@ function ProjectDetail() {
           </div>
 
           <SurfaceCard className="pd-section">
+            <h2 className="pd-section-title">关键词</h2>
+            <div className="pd-chip-groups">
+              {KEYWORD_GROUPS.map(g => {
+                const entries: KeywordEntry[] = metrics.keywords[g.key];
+                return (
+                  <div key={g.key} className="pd-chip-group">
+                    <h3 className="pd-chip-group-title">{g.title}</h3>
+                    {entries.length === 0 ? (
+                      <p className="pd-empty-text">暂无标注</p>
+                    ) : (
+                      <div className="pd-chips">
+                        {entries.map(e => (
+                          <button
+                            key={e.label}
+                            className="pd-chip"
+                            type="button"
+                            onClick={() => handleChipClick(e.label)}
+                          >
+                            <span className="pd-chip-label">{e.label}</span>
+                            <span className="pd-chip-count">{e.count}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </SurfaceCard>
+
+          <SurfaceCard className="pd-section">
             <header className="pd-section-header">
               <h2 className="pd-section-title">访谈记录</h2>
               {metrics.interviews.length > 5 && (
@@ -113,6 +156,7 @@ function ProjectDetail() {
         <section className="pd-right">
           <SurfaceCard className="pd-qa-placeholder">
             <p>AI 问答（下一步实现）</p>
+            <p className="pd-empty-text">草稿: {draftQuestion || '—'}</p>
           </SurfaceCard>
         </section>
       </div>
