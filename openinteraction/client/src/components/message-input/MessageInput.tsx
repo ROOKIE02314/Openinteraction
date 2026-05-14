@@ -1,9 +1,29 @@
-import { useState, useRef, type FormEvent, type KeyboardEvent } from 'react';
+import { useState, useRef, type FormEvent, type KeyboardEvent, useEffect } from 'react';
 import './message-input.css';
 
-function MessageInput({ onSend, disabled = false }: { onSend: (text: string) => void; disabled?: boolean }) {
-  const [text, setText] = useState('');
+interface MessageInputProps {
+  onSend: (text: string) => void;
+  disabled?: boolean;
+  value?: string;
+  onValueChange?: (next: string) => void;
+}
+
+function MessageInput({ onSend, disabled = false, value, onValueChange }: MessageInputProps) {
+  const isControlled = value !== undefined && onValueChange !== undefined;
+  const [internal, setInternal] = useState('');
+  const text = isControlled ? (value as string) : internal;
+  const setText = (next: string) => {
+    if (isControlled) onValueChange!(next);
+    else setInternal(next);
+  };
   const taRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const el = taRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+  }, [text]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -21,13 +41,6 @@ function MessageInput({ onSend, disabled = false }: { onSend: (text: string) => 
     }
   };
 
-  const handleInput = () => {
-    const el = taRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
-  };
-
   return (
     <form className="msg-input-container" onSubmit={submit}>
       <div className="msg-input-frame">
@@ -38,7 +51,6 @@ function MessageInput({ onSend, disabled = false }: { onSend: (text: string) => 
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            onInput={handleInput}
             placeholder="说说你的想法..."
             disabled={disabled}
             rows={1}
