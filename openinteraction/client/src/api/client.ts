@@ -23,13 +23,16 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     ...options,
   });
 
-  const data = await res.json();
-
   if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
     throw new Error((data as ApiError).error || 'Request failed');
   }
 
-  return data as T;
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
+  return res.json() as Promise<T>;
 }
 
 export function getInterview(token: string): Promise<Interview> {
@@ -44,4 +47,77 @@ export function sendMessage(
     method: 'POST',
     body: JSON.stringify({ interview_id: interviewId, message }),
   });
+}
+
+export interface ProjectOverview {
+  id: string;
+  name: string;
+  created_at: string;
+  total: number;
+  completed: number;
+  avg_duration_min: number | null;
+}
+
+export interface KeywordEntry {
+  label: string;
+  count: number;
+}
+
+export interface ProjectMetrics {
+  project: { id: string; name: string; created_at: string };
+  overview: {
+    total: number;
+    completed: number;
+    completion_rate: number | null;
+    avg_duration_min: number | null;
+    avg_messages_per_interview: number | null;
+  };
+  keywords: {
+    pain_point: KeywordEntry[];
+    feature_request: KeywordEntry[];
+    positive_feedback: KeywordEntry[];
+  };
+  interviews: Array<{
+    id: string;
+    started_at: string;
+    status: 'in_progress' | 'completed' | 'abandoned';
+    duration_min: number | null;
+    insight_count: number;
+  }>;
+}
+
+export interface DashboardChat {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
+}
+
+export interface AskResponse {
+  answer: string;
+  truncated: boolean;
+  dropped_count: number;
+}
+
+export function listProjects(): Promise<ProjectOverview[]> {
+  return request<ProjectOverview[]>('/dashboard/projects');
+}
+
+export function getProjectMetrics(id: string): Promise<ProjectMetrics> {
+  return request<ProjectMetrics>(`/dashboard/projects/${id}/metrics`);
+}
+
+export function getDashboardChats(id: string): Promise<DashboardChat[]> {
+  return request<DashboardChat[]>(`/dashboard/projects/${id}/chats`);
+}
+
+export function askDashboard(id: string, question: string): Promise<AskResponse> {
+  return request<AskResponse>(`/dashboard/projects/${id}/ask`, {
+    method: 'POST',
+    body: JSON.stringify({ question }),
+  });
+}
+
+export function clearDashboardChats(id: string): Promise<void> {
+  return request<void>(`/dashboard/projects/${id}/chats`, { method: 'DELETE' });
 }
