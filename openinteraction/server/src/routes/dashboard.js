@@ -1,10 +1,31 @@
 import { Router } from 'express';
+import { v4 as uuid } from 'uuid';
 import { getDb } from '../db/database.js';
 import { getProjectsOverview, getProjectMetrics } from '../services/metricsService.js';
 import { LLMProvider } from '../llm/provider.js';
 import { ask } from '../services/researchAssistant.js';
 
 const router = Router();
+
+router.post('/projects', (req, res) => {
+  const { name, product_context, core_topics } = req.body || {};
+
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return res.status(400).json({ error: 'name is required' });
+  }
+  if (!Array.isArray(core_topics) || core_topics.length === 0) {
+    return res.status(400).json({ error: 'core_topics must be a non-empty array' });
+  }
+
+  const id = uuid();
+  const db = getDb();
+  db.prepare(
+    'INSERT INTO projects (id, name, product_context, core_topics, style_guide) VALUES (?, ?, ?, ?, ?)'
+  ).run(id, name.trim(), product_context || '', JSON.stringify(core_topics), '{}');
+
+  const created = db.prepare('SELECT id, name, created_at FROM projects WHERE id = ?').get(id);
+  res.status(201).json(created);
+});
 
 router.get('/projects', (req, res) => {
   res.json(getProjectsOverview(getDb()));
