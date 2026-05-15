@@ -1,0 +1,82 @@
+{
+  "categories": [
+    {
+      "id": "ecommerce",
+      "name": "电商",
+      "templates": [
+        {
+          "id": "ecommerce-shopping",
+          "name": "购物流程体验",
+          "description": "了解用户从浏览到下单的完整购物体验",
+          "topics": [
+            { "id": "browse_search", "description": "浏览和搜索商品的体验" },
+            { "id": "product_detail", "description": "商品详情页的信息展示" },
+            { "id": "checkout", "description": "下单和支付流程" },
+            { "id": "logistics", "description": "物流和收货体验" }
+          ]
+        },
+        {
+          "id": "ecommerce-aftersale",
+          "name": "售后体验",
+          "description": "了解用户退换货和客服的体验",
+          "topics": [
+            { "id": "return_exchange", "description": "退换货流程体验" },
+            { "id": "customer_service", "description": "客服沟通体验" },
+            { "id": "refund", "description": "退款速度和体验" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "social",
+      "name": "社交",
+      "templates": [
+        {
+          "id": "social-chat",
+          "name": "聊天社交体验",
+          "description": "了解用户日常社交聊天的使用体验",
+          "topics": [
+            { "id": "messaging", "description": "文字消息收发体验" },
+            { "id": "moments", "description": "朋友圈/动态功能体验" },
+            { "id": "group_chat", "description": "群聊功能体验" },
+            { "id": "notification", "description": "消息通知体验" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "education",
+      "name": "教育",
+      "templates": [
+        {
+          "id": "education-learning",
+          "name": "在线学习体验",
+          "description": "了解用户在线学习的使用体验",
+          "topics": [
+            { "id": "content_discovery", "description": "课程发现和选择体验" },
+            { "id": "video_player", "description": "视频播放体验" },
+            { "id": "interaction", "description": "互动功能（笔记、问答）体验" },
+            { "id": "progress", "description": "学习进度管理体验" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "name": "效率工具",
+      "templates": [
+        {
+          "id": "tools-task",
+          "name": "任务管理体验",
+          "description": "了解用户使用任务管理工具的体验",
+          "topics": [
+            { "id": "task_creation", "description": "创建和管理任务的体验" },
+            { "id": "collaboration", "description": "团队协作功能体验" },
+            { "id": "reminder", "description": "提醒和日程功能体验" },
+            { "id": "integration", "description": "与其他工具集成的体验" }
+          ]
+        }
+      ]
+    }
+  ]
+}

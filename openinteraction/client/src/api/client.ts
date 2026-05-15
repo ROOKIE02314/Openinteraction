@@ -121,3 +121,35 @@ export function askDashboard(id: string, question: string): Promise<AskResponse>
 export function clearDashboardChats(id: string): Promise<void> {
   return request<void>(`/dashboard/projects/${id}/chats`, { method: 'DELETE' });
 }
+
+export interface CreateProjectParams {
+  name: string;
+  product_context: string;
+  core_topics: Array<{ id: string; description: string }>;
+}
+
+export interface CreateProjectResponse {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface CreateInterviewResponse {
+  interview_id: string;
+  share_token: string;
+  share_link: string;
+}
+
+export function createProject(params: CreateProjectParams): Promise<CreateProjectResponse> {
+  return request<CreateProjectResponse>('/dashboard/projects', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
+}
+
+export function createInterview(projectId: string): Promise<CreateInterviewResponse> {
+  return request<CreateInterviewResponse>('/interview/create', {
+    method: 'POST',
+    body: JSON.stringify({ project_id: projectId }),
+  });
+}
