@@ -30,7 +30,10 @@ function DashboardHome() {
 
   return (
     <DashboardLayout>
-      <h1 className="dh-title">研究项目</h1>
+      <div className="dh-header-row">
+        <h1 className="dh-title">研究项目</h1>
+        <Link to="/dashboard/create" className="dh-create-btn">新建项目</Link>
+      </div>
       {error && <p className="dh-error" role="alert">{error}</p>}
       {projects === null && !error && <p className="dh-loading">加载中…</p>}
       {projects && projects.length === 0 && (

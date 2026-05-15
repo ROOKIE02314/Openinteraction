@@ -5,6 +5,7 @@ import ChatPage from './pages/chat/ChatPage';
 import CompletePage from './pages/complete/CompletePage';
 import DashboardHome from './pages/dashboard/DashboardHome';
 import ProjectDetail from './pages/dashboard/ProjectDetail';
+import CreateProject from './pages/dashboard/CreateProject';
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
   {
     path: '/dashboard',
     element: <DashboardHome />,
+  },
+  {
+    path: '/dashboard/create',
+    element: <CreateProject />,
   },
   {
     path: '/dashboard/projects/:id',

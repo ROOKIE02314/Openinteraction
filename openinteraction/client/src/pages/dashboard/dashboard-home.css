@@ -75,3 +75,30 @@
   letter-spacing: var(--letter-spacing-wide);
   text-transform: uppercase;
 }
+
+.dh-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.dh-header-row .dh-title {
+  margin-bottom: 0;
+}
+
+.dh-create-btn {
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-action-bg-primary);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.dh-create-btn:hover {
+  background: var(--color-action-bg-hover);
+}
