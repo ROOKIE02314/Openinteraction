@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { initDb, getDb } from '../../src/db/database.js';
-import { getProjectsOverview, getProjectMetrics } from '../../src/services/metricsService.js';
+import { getProjectsOverview, getProjectMetrics, getDashboardOverview } from '../../src/services/metricsService.js';
 import { v4 as uuid } from 'uuid';
 import fs from 'fs';
 
@@ -154,5 +154,34 @@ describe('getProjectMetrics', () => {
     expect(m.keywords.pain_point).toHaveLength(10);
     expect(m.keywords.pain_point[0]).toEqual({ label: 'label-12', count: 12 });
     expect(m.keywords.pain_point[9]).toEqual({ label: 'label-3', count: 3 });
+  });
+});
+
+describe('getDashboardOverview — counts', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('returns zero counts on empty database', () => {
+    const o = getDashboardOverview(getDb());
+    expect(o.total_interviews).toBe(0);
+    expect(o.in_progress_interviews).toBe(0);
+    expect(o.total_projects).toBe(0);
+  });
+
+  it('counts projects, total interviews, and in_progress interviews', () => {
+    const p1 = insertProject('A');
+    const p2 = insertProject('B');
+    insertInterview(p1, 'completed', '2026-05-01 10:00:00', '2026-05-01 10:10:00');
+    insertInterview(p1, 'in_progress', '2026-05-02 10:00:00', null);
+    insertInterview(p2, 'in_progress', '2026-05-03 10:00:00', null);
+    insertInterview(p2, 'abandoned', '2026-05-04 10:00:00', null);
+
+    const o = getDashboardOverview(getDb());
+    expect(o.total_projects).toBe(2);
+    expect(o.total_interviews).toBe(4);
+    expect(o.in_progress_interviews).toBe(2);
   });
 });

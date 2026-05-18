@@ -1,3 +1,23 @@
+export function getDashboardOverview(db) {
+  const totals = db.prepare(`
+    SELECT
+      (SELECT COUNT(*) FROM projects) AS total_projects,
+      (SELECT COUNT(*) FROM interviews) AS total_interviews,
+      (SELECT COUNT(*) FROM interviews WHERE status = 'in_progress') AS in_progress_interviews
+  `).get();
+
+  return {
+    total_projects: totals.total_projects,
+    total_interviews: totals.total_interviews,
+    in_progress_interviews: totals.in_progress_interviews,
+    interview_growth_pct: null,
+    monthly_interviews: [],
+    trending_tags: [],
+    total_keyword_count: 0,
+    recent_interviews: [],
+  };
+}
+
 export function getProjectsOverview(db) {
   return db.prepare(`
     SELECT
