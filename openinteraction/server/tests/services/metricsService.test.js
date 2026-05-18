@@ -185,3 +185,49 @@ describe('getDashboardOverview — counts', () => {
     expect(o.in_progress_interviews).toBe(2);
   });
 });
+
+describe('getDashboardOverview — growth_pct', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  function thisMonth(day) {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')} 10:00:00`;
+  }
+
+  function lastMonth(day) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')} 10:00:00`;
+  }
+
+  it('returns null when previous month has zero interviews', () => {
+    const p = insertProject('A');
+    insertInterview(p, 'completed', thisMonth(1), thisMonth(1));
+    insertInterview(p, 'completed', thisMonth(2), thisMonth(2));
+
+    const o = getDashboardOverview(getDb());
+    expect(o.interview_growth_pct).toBeNull();
+  });
+
+  it('computes growth percent rounded to integer', () => {
+    const p = insertProject('A');
+    for (let i = 1; i <= 10; i++) insertInterview(p, 'completed', lastMonth(i), lastMonth(i));
+    for (let i = 1; i <= 12; i++) insertInterview(p, 'completed', thisMonth(i), thisMonth(i));
+
+    const o = getDashboardOverview(getDb());
+    expect(o.interview_growth_pct).toBe(20);
+  });
+
+  it('handles negative growth', () => {
+    const p = insertProject('A');
+    for (let i = 1; i <= 10; i++) insertInterview(p, 'completed', lastMonth(i), lastMonth(i));
+    for (let i = 1; i <= 5; i++) insertInterview(p, 'completed', thisMonth(i), thisMonth(i));
+
+    const o = getDashboardOverview(getDb());
+    expect(o.interview_growth_pct).toBe(-50);
+  });
+});

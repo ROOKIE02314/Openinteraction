@@ -6,11 +6,22 @@ export function getDashboardOverview(db) {
       (SELECT COUNT(*) FROM interviews WHERE status = 'in_progress') AS in_progress_interviews
   `).get();
 
+  const growth = db.prepare(`
+    SELECT
+      SUM(CASE WHEN strftime('%Y-%m', started_at) = strftime('%Y-%m', 'now') THEN 1 ELSE 0 END) AS this_month,
+      SUM(CASE WHEN strftime('%Y-%m', started_at) = strftime('%Y-%m', 'now', '-1 month') THEN 1 ELSE 0 END) AS last_month
+    FROM interviews
+  `).get();
+
+  const lastM = growth.last_month || 0;
+  const thisM = growth.this_month || 0;
+  const interview_growth_pct = lastM === 0 ? null : Math.round(((thisM - lastM) / lastM) * 100);
+
   return {
     total_projects: totals.total_projects,
     total_interviews: totals.total_interviews,
     in_progress_interviews: totals.in_progress_interviews,
-    interview_growth_pct: null,
+    interview_growth_pct,
     monthly_interviews: [],
     trending_tags: [],
     total_keyword_count: 0,
