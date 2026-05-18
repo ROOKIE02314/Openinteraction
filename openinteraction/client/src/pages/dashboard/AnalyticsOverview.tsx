@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '../../components/dashboard-layout/DashboardLayout';
 import SurfaceCard from '../../components/surface/SurfaceCard';
+import Sparkline from '../../components/charts/Sparkline';
 import { getDashboardOverview, type DashboardOverview } from '../../api/client';
 import './analytics-overview.css';
 
@@ -68,6 +69,41 @@ function AnalyticsOverview() {
           </div>
           <div className="ao-kpi-foot">
             <span className="ao-kpi-foot-text">Across research workstreams</span>
+          </div>
+        </SurfaceCard>
+      </section>
+
+      <section className="ao-mid-row">
+        <SurfaceCard className="ao-chart-card">
+          <div className="ao-chart-card-head">
+            <div>
+              <h3 className="ao-card-title">Interview Frequency</h3>
+              <p className="ao-card-subtitle">Monthly breakdown of conducted sessions</p>
+            </div>
+          </div>
+          <div className="ao-chart-body">
+            <Sparkline points={data.monthly_interviews} />
+          </div>
+        </SurfaceCard>
+
+        <SurfaceCard className="ao-tags-card">
+          <h3 className="ao-card-title">Trending Topics</h3>
+          <div className="ao-tags-cloud" style={{ marginTop: 'var(--space-4)' }}>
+            {data.trending_tags.length === 0 && (
+              <p className="ao-tags-empty">No annotations yet — insights will appear as interviews complete.</p>
+            )}
+            {data.trending_tags.map((tag, idx) => (
+              <span
+                key={tag.label}
+                className={`ao-tag-pill${idx < 2 ? ' ao-tag-pill--strong' : ''}`}
+              >
+                {tag.label}
+              </span>
+            ))}
+          </div>
+          <div className="ao-tags-foot">
+            <span className="ao-tags-foot-label">Total Keywords</span>
+            <span className="ao-tags-foot-value">{data.total_keyword_count}</span>
           </div>
         </SurfaceCard>
       </section>
