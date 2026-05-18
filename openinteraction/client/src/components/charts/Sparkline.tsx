@@ -2,6 +2,11 @@ import './sparkline.css';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+const SVG_WIDTH = 800;
+const SVG_HEIGHT = 120;
+const CHART_BOTTOM = 100;
+const BASELINE = 120;
+
 interface SparklineProps {
   points: Array<{ month: string; count: number }>;
   emptyText?: string;
@@ -12,13 +17,12 @@ function monthLabel(monthKey: string): string {
   return MONTH_NAMES[idx] ?? monthKey;
 }
 
-function buildPath(points: Array<{ count: number }>, width: number, lineY: number, baseY: number): { line: string; area: string } {
+function buildPath(points: Array<{ count: number }>, stepX: number): { line: string; area: string } {
   if (points.length === 0) return { line: '', area: '' };
   const maxV = Math.max(1, ...points.map(p => p.count));
-  const stepX = points.length > 1 ? width / (points.length - 1) : 0;
   const coords = points.map((p, i) => ({
     x: i * stepX,
-    y: lineY - (p.count / maxV) * lineY,
+    y: CHART_BOTTOM - (p.count / maxV) * CHART_BOTTOM,
   }));
 
   let line = `M${coords[0].x},${coords[0].y}`;
@@ -28,22 +32,23 @@ function buildPath(points: Array<{ count: number }>, width: number, lineY: numbe
     const cx = (prev.x + curr.x) / 2;
     line += ` C${cx},${prev.y} ${cx},${curr.y} ${curr.x},${curr.y}`;
   }
-  const area = `${line} L${coords[coords.length - 1].x},${baseY} L${coords[0].x},${baseY} Z`;
+  const area = `${line} L${coords[coords.length - 1].x},${BASELINE} L${coords[0].x},${BASELINE} Z`;
   return { line, area };
 }
 
 function Sparkline({ points, emptyText = 'Waiting for first interviews' }: SparklineProps) {
   const allZero = points.every(p => p.count === 0);
-  const width = 800;
-  const height = 120;
-  const lineY = 100;
-  const baseY = 120;
-
-  const { line, area } = buildPath(points, width, lineY, baseY);
+  const stepX = points.length > 1 ? SVG_WIDTH / (points.length - 1) : 0;
+  const { line, area } = buildPath(points, stepX);
 
   return (
     <div className="sparkline-root">
-      <svg viewBox={`0 0 ${width} ${height}`} className="sparkline-svg" preserveAspectRatio="none">
+      <svg
+        viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+        className="sparkline-svg"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
         {!allZero && line && (
           <>
             <path d={area} className="sparkline-area" />
@@ -51,16 +56,19 @@ function Sparkline({ points, emptyText = 'Waiting for first interviews' }: Spark
           </>
         )}
         {allZero && (
-          <line x1="0" y1={lineY / 2 + 20} x2={width} y2={lineY / 2 + 20} className="sparkline-line sparkline-line--empty" />
+          <line
+            x1="0"
+            y1={CHART_BOTTOM / 2 + 20}
+            x2={SVG_WIDTH}
+            y2={CHART_BOTTOM / 2 + 20}
+            className="sparkline-line sparkline-line--empty"
+          />
         )}
-        {points.map((p, i) => {
-          const stepX = points.length > 1 ? width / (points.length - 1) : 0;
-          return (
-            <text key={p.month} x={i * stepX} y={height - 5} className="sparkline-label">
-              {monthLabel(p.month)}
-            </text>
-          );
-        })}
+        {points.map((p, i) => (
+          <text key={p.month} x={i * stepX} y={SVG_HEIGHT - 5} className="sparkline-label">
+            {monthLabel(p.month)}
+          </text>
+        ))}
       </svg>
       {allZero && <div className="sparkline-empty-text">{emptyText}</div>}
     </div>
