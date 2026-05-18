@@ -86,6 +86,31 @@ export interface ProjectMetrics {
   }>;
 }
 
+export interface MonthlyInterviewBucket {
+  month: string;
+  count: number;
+}
+
+export interface RecentInterviewRow {
+  id: string;
+  short_id: string;
+  project_id: string;
+  project_name: string;
+  status: 'in_progress' | 'completed' | 'abandoned';
+  started_at: string;
+}
+
+export interface DashboardOverview {
+  total_interviews: number;
+  in_progress_interviews: number;
+  total_projects: number;
+  interview_growth_pct: number | null;
+  monthly_interviews: MonthlyInterviewBucket[];
+  trending_tags: Array<{ label: string; count: number }>;
+  total_keyword_count: number;
+  recent_interviews: RecentInterviewRow[];
+}
+
 export interface DashboardChat {
   id: string;
   role: 'user' | 'assistant';
@@ -101,6 +126,10 @@ export interface AskResponse {
 
 export function listProjects(): Promise<ProjectOverview[]> {
   return request<ProjectOverview[]>('/dashboard/projects');
+}
+
+export function getDashboardOverview(): Promise<DashboardOverview> {
+  return request<DashboardOverview>('/dashboard/overview');
 }
 
 export function getProjectMetrics(id: string): Promise<ProjectMetrics> {
