@@ -35,14 +35,25 @@ export function getDashboardOverview(db) {
     monthly_interviews.push({ month: key, count: monthlyMap.get(key) || 0 });
   }
 
+  const trending_tags = db.prepare(`
+    SELECT label, COUNT(*) AS count
+    FROM annotations
+    GROUP BY label
+    ORDER BY count DESC, label ASC
+    LIMIT 9
+  `).all();
+
+  const totalKw = db.prepare('SELECT COUNT(DISTINCT label) AS c FROM annotations').get();
+  const total_keyword_count = totalKw.c;
+
   return {
     total_projects: totals.total_projects,
     total_interviews: totals.total_interviews,
     in_progress_interviews: totals.in_progress_interviews,
     interview_growth_pct,
     monthly_interviews,
-    trending_tags: [],
-    total_keyword_count: 0,
+    trending_tags,
+    total_keyword_count,
     recent_interviews: [],
   };
 }

@@ -273,3 +273,49 @@ describe('getDashboardOverview — monthly_interviews', () => {
     for (const b of earlier) expect(b.count).toBe(0);
   });
 });
+
+describe('getDashboardOverview — trending_tags', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('returns top tags sorted by count desc with label asc tie-break', () => {
+    const p = insertProject('A');
+    const i = insertInterview(p, 'completed', '2026-05-01 10:00:00', '2026-05-01 10:10:00');
+
+    insertAnnotation(i, 'pain_point', 'Onboarding');
+    insertAnnotation(i, 'pain_point', 'Onboarding');
+    insertAnnotation(i, 'pain_point', 'Onboarding');
+    insertAnnotation(i, 'pain_point', 'Navigation');
+    insertAnnotation(i, 'feature_request', 'Mobile');
+    insertAnnotation(i, 'feature_request', 'Mobile');
+    insertAnnotation(i, 'positive_feedback', 'Speed');
+    insertAnnotation(i, 'positive_feedback', 'Search');
+
+    const o = getDashboardOverview(getDb());
+    expect(o.trending_tags[0]).toEqual({ label: 'Onboarding', count: 3 });
+    expect(o.trending_tags[1]).toEqual({ label: 'Mobile', count: 2 });
+    expect(o.trending_tags[2]).toEqual({ label: 'Navigation', count: 1 });
+    expect(o.trending_tags[3]).toEqual({ label: 'Search', count: 1 });
+    expect(o.trending_tags[4]).toEqual({ label: 'Speed', count: 1 });
+    expect(o.total_keyword_count).toBe(5);
+  });
+
+  it('caps trending_tags at 9 entries', () => {
+    const p = insertProject('A');
+    const i = insertInterview(p, 'completed', '2026-05-01 10:00:00', '2026-05-01 10:10:00');
+    for (let n = 0; n < 12; n++) insertAnnotation(i, 'pain_point', `tag-${String(n).padStart(2, '0')}`);
+
+    const o = getDashboardOverview(getDb());
+    expect(o.trending_tags).toHaveLength(9);
+    expect(o.total_keyword_count).toBe(12);
+  });
+
+  it('returns empty arrays when no annotations', () => {
+    const o = getDashboardOverview(getDb());
+    expect(o.trending_tags).toEqual([]);
+    expect(o.total_keyword_count).toBe(0);
+  });
+});
