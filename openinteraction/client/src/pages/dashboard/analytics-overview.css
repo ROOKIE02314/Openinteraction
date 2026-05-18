@@ -1,0 +1,82 @@
+.ao-error {
+  color: #8a4a4a;
+}
+
+.ao-loading {
+  color: var(--color-text-secondary);
+}
+
+.ao-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+.ao-kpi-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-6);
+  min-height: 140px;
+}
+
+.ao-kpi-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+.ao-kpi-value {
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.ao-kpi-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.ao-kpi-foot-text {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ao-growth-pill {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.ao-growth-pill--neg {
+  background: var(--color-glass-tag);
+  color: var(--color-text-secondary);
+}
+
+.ao-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-circle);
+  background: var(--color-status-active);
+  box-shadow: var(--shadow-dot);
+  animation: ao-pulse 1.6s ease-in-out infinite;
+}
+
+.ao-pulse-dot--idle {
+  animation: none;
+  opacity: 0.4;
+}
+
+@keyframes ao-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
