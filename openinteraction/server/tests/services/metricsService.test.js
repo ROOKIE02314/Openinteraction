@@ -233,3 +233,43 @@ describe('getDashboardOverview — growth_pct', () => {
     expect(o.interview_growth_pct).toBe(-50);
   });
 });
+
+describe('getDashboardOverview — monthly_interviews', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('returns 7 month buckets ordered ascending including current month', () => {
+    const o = getDashboardOverview(getDb());
+    expect(o.monthly_interviews).toHaveLength(7);
+
+    const months = o.monthly_interviews.map(b => b.month);
+    const sorted = [...months].sort();
+    expect(months).toEqual(sorted);
+
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    expect(months[months.length - 1]).toBe(currentMonth);
+
+    for (const b of o.monthly_interviews) expect(b.count).toBe(0);
+  });
+
+  it('zero-fills empty months and counts present months', () => {
+    const p = insertProject('A');
+    const now = new Date();
+    const m = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    insertInterview(p, 'completed', `${m}-01 10:00:00`, `${m}-01 10:10:00`);
+    insertInterview(p, 'completed', `${m}-02 10:00:00`, `${m}-02 10:10:00`);
+    insertInterview(p, 'completed', `${m}-03 10:00:00`, `${m}-03 10:10:00`);
+
+    const o = getDashboardOverview(getDb());
+    const last = o.monthly_interviews[o.monthly_interviews.length - 1];
+    expect(last.month).toBe(m);
+    expect(last.count).toBe(3);
+
+    const earlier = o.monthly_interviews.slice(0, -1);
+    for (const b of earlier) expect(b.count).toBe(0);
+  });
+});

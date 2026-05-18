@@ -17,12 +17,30 @@ export function getDashboardOverview(db) {
   const thisM = growth.this_month || 0;
   const interview_growth_pct = lastM === 0 ? null : Math.round(((thisM - lastM) / lastM) * 100);
 
+  const monthlyRows = db.prepare(`
+    SELECT strftime('%Y-%m', started_at) AS month, COUNT(*) AS count
+    FROM interviews
+    WHERE started_at >= date('now', 'start of month', '-6 months')
+    GROUP BY month
+  `).all();
+
+  const monthlyMap = new Map(monthlyRows.map(r => [r.month, r.count]));
+  const monthly_interviews = [];
+  const ref = new Date();
+  ref.setDate(1);
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(ref);
+    d.setMonth(d.getMonth() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthly_interviews.push({ month: key, count: monthlyMap.get(key) || 0 });
+  }
+
   return {
     total_projects: totals.total_projects,
     total_interviews: totals.total_interviews,
     in_progress_interviews: totals.in_progress_interviews,
     interview_growth_pct,
-    monthly_interviews: [],
+    monthly_interviews,
     trending_tags: [],
     total_keyword_count: 0,
     recent_interviews: [],
