@@ -79,4 +79,10 @@
   --letter-spacing-base: 0.02em;
   --letter-spacing-wide: 0.05em;
   --letter-spacing-tight: -0.01em;
+
+  /* === 状态徽章（dashboard analytics overview） === */
+  --color-success-bg: rgba(150, 200, 150, 0.25);
+  --color-success-text: #3b6b3b;
+  --color-status-active: rgba(255, 255, 255, 0.85);
+  --color-status-warn-bg: rgba(255, 255, 255, 0.6);
 }
