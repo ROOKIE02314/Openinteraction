@@ -40,8 +40,8 @@ function CreateProject() {
   const [step, setStep] = useState(0);
 
   // Step 0 state
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [, setSelectedCategory] = useState<Category | null>(null);
+  const [, setSelectedTemplate] = useState<Template | null>(null);
 
   // Step 1 state
   const [productName, setProductName] = useState('');
