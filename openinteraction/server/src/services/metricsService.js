@@ -46,6 +46,24 @@ export function getDashboardOverview(db) {
   const totalKw = db.prepare('SELECT COUNT(DISTINCT label) AS c FROM annotations').get();
   const total_keyword_count = totalKw.c;
 
+  const recentRows = db.prepare(`
+    SELECT
+      i.id AS id,
+      i.project_id AS project_id,
+      p.name AS project_name,
+      i.status AS status,
+      i.started_at AS started_at
+    FROM interviews i
+    JOIN projects p ON p.id = i.project_id
+    ORDER BY i.started_at DESC
+    LIMIT 20
+  `).all();
+
+  const recent_interviews = recentRows.map(r => ({
+    ...r,
+    short_id: `INT-${r.id.slice(0, 4)}`,
+  }));
+
   return {
     total_projects: totals.total_projects,
     total_interviews: totals.total_interviews,
@@ -54,7 +72,7 @@ export function getDashboardOverview(db) {
     monthly_interviews,
     trending_tags,
     total_keyword_count,
-    recent_interviews: [],
+    recent_interviews,
   };
 }
 

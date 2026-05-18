@@ -319,3 +319,42 @@ describe('getDashboardOverview — trending_tags', () => {
     expect(o.total_keyword_count).toBe(0);
   });
 });
+
+describe('getDashboardOverview — recent_interviews', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('returns rows ordered by started_at desc with project_name and short_id', () => {
+    const p = insertProject('Alpha');
+    const i1 = insertInterview(p, 'completed', '2026-05-01 10:00:00', '2026-05-01 10:10:00');
+    const i2 = insertInterview(p, 'in_progress', '2026-05-02 10:00:00', null);
+
+    const o = getDashboardOverview(getDb());
+    expect(o.recent_interviews).toHaveLength(2);
+    expect(o.recent_interviews[0].id).toBe(i2);
+    expect(o.recent_interviews[1].id).toBe(i1);
+    expect(o.recent_interviews[0].project_name).toBe('Alpha');
+    expect(o.recent_interviews[0].project_id).toBe(p);
+    expect(o.recent_interviews[0].status).toBe('in_progress');
+    expect(o.recent_interviews[0].short_id).toBe(`INT-${i2.slice(0, 4)}`);
+    expect(o.recent_interviews[0].started_at).toBe('2026-05-02 10:00:00');
+  });
+
+  it('caps recent_interviews at 20 rows', () => {
+    const p = insertProject('Alpha');
+    for (let n = 0; n < 25; n++) {
+      const day = String(n + 1).padStart(2, '0');
+      insertInterview(p, 'completed', `2026-05-${day} 10:00:00`, `2026-05-${day} 10:10:00`);
+    }
+    const o = getDashboardOverview(getDb());
+    expect(o.recent_interviews).toHaveLength(20);
+  });
+
+  it('returns empty array when no interviews', () => {
+    const o = getDashboardOverview(getDb());
+    expect(o.recent_interviews).toEqual([]);
+  });
+});
