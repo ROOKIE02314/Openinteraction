@@ -195,11 +195,13 @@ describe('getDashboardOverview — growth_pct', () => {
 
   function thisMonth(day) {
     const d = new Date();
+    d.setDate(1);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')} 10:00:00`;
   }
 
   function lastMonth(day) {
     const d = new Date();
+    d.setDate(1);
     d.setMonth(d.getMonth() - 1);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')} 10:00:00`;
   }
