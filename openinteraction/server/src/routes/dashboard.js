@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
 import { getDb } from '../db/database.js';
-import { getProjectsOverview, getProjectMetrics } from '../services/metricsService.js';
+import { getProjectsOverview, getProjectMetrics, getDashboardOverview } from '../services/metricsService.js';
 import { LLMProvider } from '../llm/provider.js';
 import { ask } from '../services/researchAssistant.js';
 
@@ -29,6 +29,10 @@ router.post('/projects', (req, res) => {
 
 router.get('/projects', (req, res) => {
   res.json(getProjectsOverview(getDb()));
+});
+
+router.get('/overview', (req, res) => {
+  res.json(getDashboardOverview(getDb()));
 });
 
 router.get('/projects/:id/metrics', (req, res) => {

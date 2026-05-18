@@ -209,6 +209,48 @@ describe('Dashboard routes — POST /api/dashboard/projects', () => {
   });
 });
 
+describe('Dashboard routes — overview', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('GET /api/dashboard/overview returns documented shape with empty data', async () => {
+    const res = await request(app).get('/api/dashboard/overview').expect(200);
+    expect(res.body).toMatchObject({
+      total_interviews: 0,
+      in_progress_interviews: 0,
+      total_projects: 0,
+      interview_growth_pct: null,
+      total_keyword_count: 0,
+      trending_tags: [],
+      recent_interviews: [],
+    });
+    expect(res.body.monthly_interviews).toHaveLength(7);
+  });
+
+  it('GET /api/dashboard/overview reflects inserted data', async () => {
+    const db = getDb();
+    const pid = uuid();
+    db.prepare('INSERT INTO projects (id, name, product_context, core_topics) VALUES (?, ?, ?, ?)').run(
+      pid, 'P1', 'ctx', '[]'
+    );
+    const iid = uuid();
+    db.prepare('INSERT INTO interviews (id, project_id, share_token, status, started_at, ended_at) VALUES (?, ?, ?, ?, ?, ?)').run(
+      iid, pid, uuid(), 'in_progress', '2026-05-01 10:00:00', null
+    );
+
+    const res = await request(app).get('/api/dashboard/overview').expect(200);
+    expect(res.body.total_projects).toBe(1);
+    expect(res.body.total_interviews).toBe(1);
+    expect(res.body.in_progress_interviews).toBe(1);
+    expect(res.body.recent_interviews).toHaveLength(1);
+    expect(res.body.recent_interviews[0].project_name).toBe('P1');
+    expect(res.body.recent_interviews[0].short_id).toBe(`INT-${iid.slice(0, 4)}`);
+  });
+});
+
 describe('Dashboard router mounted on app', () => {
   it('GET /api/dashboard/projects via real app returns 200', async () => {
     process.env.DB_PATH = TEST_DB;
