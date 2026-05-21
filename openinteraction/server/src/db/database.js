@@ -7,6 +7,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let db;
 
 export function initDb(dbPath = './data/interview.db') {
+  // Close existing connection if any (prevents file lock issues on Windows)
+  if (db) {
+    try { db.close(); } catch {}
+  }
+
   const dir = path.dirname(dbPath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
