@@ -102,3 +102,36 @@
   20% { opacity: 1; }
   100% { opacity: 0.2; }
 }
+
+/* Audio controls */
+.msg-audio-controls {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.msg-audio-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-circle);
+  border: 1px solid var(--color-glass-border);
+  background: var(--color-action-bg);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-standard),
+              color var(--duration-fast) var(--ease-standard);
+  padding: 0;
+}
+
+.msg-audio-btn:hover {
+  background: var(--color-action-bg-hover);
+  color: var(--color-text-primary);
+}
+
+/* Streaming bubble */
+.msg-bubble--streaming {
+  opacity: 0.85;
+}
