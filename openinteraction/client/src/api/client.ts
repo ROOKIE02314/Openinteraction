@@ -74,11 +74,17 @@ export async function sendMessageStream(
     throw new Error((data as ApiError).error || 'Stream request failed');
   }
 
-  const reader = res.body!.getReader();
+  if (!res.body) {
+    throw new Error('Response body is null — streaming not supported');
+  }
+
+  const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
 
   try {
+    let eventType = '';
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -90,14 +96,22 @@ export async function sendMessageStream(
 
       for (const line of lines) {
         const trimmed = line.trim();
-        if (!trimmed || !trimmed.startsWith('data: ')) continue;
-        const jsonStr = trimmed.slice(6);
-        if (jsonStr === '[DONE]') continue;
-        try {
-          const event = JSON.parse(jsonStr) as SSEEvent;
-          onEvent(event);
-        } catch {
-          // skip malformed JSON
+        if (!trimmed) { eventType = ''; continue; }
+        if (trimmed.startsWith('event: ')) {
+          eventType = trimmed.slice(7).trim();
+          continue;
+        }
+        if (trimmed.startsWith('data: ')) {
+          const jsonStr = trimmed.slice(6);
+          if (jsonStr === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const event = { type: eventType as SSEEvent['type'], ...parsed };
+            onEvent(event);
+          } catch {
+            // skip malformed JSON
+          }
+          eventType = '';
         }
       }
     }

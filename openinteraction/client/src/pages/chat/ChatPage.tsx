@@ -114,6 +114,7 @@ function ChatPage() {
         controller.signal,
       );
     } catch (err: unknown) {
+      setError(`SSE错误: ${err instanceof Error ? err.message : String(err)}`);
       // If aborted, don't fall back
       if (controller.signal.aborted) return;
 
