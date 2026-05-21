@@ -49,6 +49,76 @@ export function sendMessage(
   });
 }
 
+export interface SSEEvent {
+  type: 'text' | 'audio' | 'done' | 'error';
+  chunk?: string;
+  interview_status?: string;
+  message?: string;
+}
+
+export async function sendMessageStream(
+  interviewId: string,
+  message: string,
+  onEvent: (event: SSEEvent) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  const res = await fetch(`${BASE}/chat/stream`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ interview_id: interviewId, message }),
+    signal,
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as ApiError).error || 'Stream request failed');
+  }
+
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop()!;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith('data: ')) continue;
+        const jsonStr = trimmed.slice(6);
+        if (jsonStr === '[DONE]') continue;
+        try {
+          const event = JSON.parse(jsonStr) as SSEEvent;
+          onEvent(event);
+        } catch {
+          // skip malformed JSON
+        }
+      }
+    }
+
+    // process any remaining buffer
+    if (buffer.trim().startsWith('data: ')) {
+      const jsonStr = buffer.trim().slice(6);
+      if (jsonStr !== '[DONE]') {
+        try {
+          const event = JSON.parse(jsonStr) as SSEEvent;
+          onEvent(event);
+        } catch {
+          // skip malformed JSON
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 export interface ProjectOverview {
   id: string;
   name: string;
