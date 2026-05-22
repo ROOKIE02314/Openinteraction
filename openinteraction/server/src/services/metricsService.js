@@ -1,3 +1,81 @@
+export function getDashboardOverview(db) {
+  const totals = db.prepare(`
+    SELECT
+      (SELECT COUNT(*) FROM projects) AS total_projects,
+      (SELECT COUNT(*) FROM interviews) AS total_interviews,
+      (SELECT COUNT(*) FROM interviews WHERE status = 'in_progress') AS in_progress_interviews
+  `).get();
+
+  const growth = db.prepare(`
+    SELECT
+      SUM(CASE WHEN strftime('%Y-%m', started_at) = strftime('%Y-%m', 'now') THEN 1 ELSE 0 END) AS this_month,
+      SUM(CASE WHEN strftime('%Y-%m', started_at) = strftime('%Y-%m', 'now', '-1 month') THEN 1 ELSE 0 END) AS last_month
+    FROM interviews
+  `).get();
+
+  const lastM = growth.last_month || 0;
+  const thisM = growth.this_month || 0;
+  const interview_growth_pct = lastM === 0 ? null : Math.round(((thisM - lastM) / lastM) * 100);
+
+  const monthlyRows = db.prepare(`
+    SELECT strftime('%Y-%m', started_at) AS month, COUNT(*) AS count
+    FROM interviews
+    WHERE started_at >= date('now', 'start of month', '-6 months')
+    GROUP BY month
+  `).all();
+
+  const monthlyMap = new Map(monthlyRows.map(r => [r.month, r.count]));
+  const monthly_interviews = [];
+  const ref = new Date();
+  ref.setDate(1);
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(ref);
+    d.setMonth(d.getMonth() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthly_interviews.push({ month: key, count: monthlyMap.get(key) || 0 });
+  }
+
+  const trending_tags = db.prepare(`
+    SELECT label, COUNT(*) AS count
+    FROM annotations
+    GROUP BY label
+    ORDER BY count DESC, label ASC
+    LIMIT 9
+  `).all();
+
+  const totalKw = db.prepare('SELECT COUNT(DISTINCT label) AS c FROM annotations').get();
+  const total_keyword_count = totalKw.c;
+
+  const recentRows = db.prepare(`
+    SELECT
+      i.id AS id,
+      i.project_id AS project_id,
+      p.name AS project_name,
+      i.status AS status,
+      i.started_at AS started_at
+    FROM interviews i
+    JOIN projects p ON p.id = i.project_id
+    ORDER BY i.started_at DESC
+    LIMIT 20
+  `).all();
+
+  const recent_interviews = recentRows.map(r => ({
+    ...r,
+    short_id: `INT-${r.id.slice(0, 4)}`,
+  }));
+
+  return {
+    total_projects: totals.total_projects,
+    total_interviews: totals.total_interviews,
+    in_progress_interviews: totals.in_progress_interviews,
+    interview_growth_pct,
+    monthly_interviews,
+    trending_tags,
+    total_keyword_count,
+    recent_interviews,
+  };
+}
+
 export function getProjectsOverview(db) {
   return db.prepare(`
     SELECT

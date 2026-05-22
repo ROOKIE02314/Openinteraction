@@ -3,8 +3,10 @@ import HomePage from './pages/home/HomePage';
 import LandingPage from './pages/landing/LandingPage';
 import ChatPage from './pages/chat/ChatPage';
 import CompletePage from './pages/complete/CompletePage';
-import DashboardHome from './pages/dashboard/DashboardHome';
+import AnalyticsOverview from './pages/dashboard/AnalyticsOverview';
+import ProjectsList from './pages/dashboard/ProjectsList';
 import ProjectDetail from './pages/dashboard/ProjectDetail';
+import CreateProject from './pages/dashboard/CreateProject';
 
 export const router = createBrowserRouter([
   {
@@ -25,7 +27,15 @@ export const router = createBrowserRouter([
   },
   {
     path: '/dashboard',
-    element: <DashboardHome />,
+    element: <AnalyticsOverview />,
+  },
+  {
+    path: '/dashboard/projects',
+    element: <ProjectsList />,
+  },
+  {
+    path: '/dashboard/create',
+    element: <CreateProject />,
   },
   {
     path: '/dashboard/projects/:id',

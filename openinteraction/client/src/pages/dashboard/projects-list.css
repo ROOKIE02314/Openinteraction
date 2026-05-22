@@ -1,36 +1,35 @@
-.dh-title {
-  font-size: 28px;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-6);
-  letter-spacing: var(--letter-spacing-tight);
+.pl-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
 }
 
-.dh-loading,
-.dh-error {
+.pl-loading,
+.pl-error {
   color: var(--color-text-secondary);
 }
 
-.dh-error {
+.pl-error {
   color: #8a4a4a;
 }
 
-.dh-empty {
+.pl-empty {
   padding: var(--space-8);
   color: var(--color-text-secondary);
 }
 
-.dh-grid {
+.pl-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--space-5);
 }
 
-.dh-card-link {
+.pl-card-link {
   text-decoration: none;
 }
 
-.dh-card {
+.pl-card {
   padding: var(--space-6);
   display: flex;
   flex-direction: column;
@@ -38,18 +37,18 @@
   transition: background var(--duration-fast) var(--ease-standard);
 }
 
-.dh-card-link:hover .dh-card {
+.pl-card-link:hover .pl-card {
   background: var(--color-glass-hover);
 }
 
-.dh-card-name {
+.pl-card-name {
   font-size: 18px;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   margin: 0;
 }
 
-.dh-card-time {
+.pl-card-time {
   font-size: 12px;
   color: var(--color-text-secondary);
   margin: 0;
@@ -57,21 +56,37 @@
   text-transform: uppercase;
 }
 
-.dh-card-stats {
+.pl-card-stats {
   display: flex;
   gap: var(--space-5);
   margin-top: var(--space-2);
 }
 
-.dh-stat-num {
+.pl-stat-num {
   font-size: 22px;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
 
-.dh-stat-label {
+.pl-stat-label {
   font-size: 11px;
   color: var(--color-text-secondary);
   letter-spacing: var(--letter-spacing-wide);
   text-transform: uppercase;
+}
+
+.pl-create-btn {
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-action-bg-primary);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.pl-create-btn:hover {
+  background: var(--color-action-bg-hover);
 }

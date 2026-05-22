@@ -1,0 +1,52 @@
+.sparkline-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.sparkline-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sparkline-line {
+  fill: none;
+  stroke: var(--color-glass-border);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: sparkline-dash 3s linear forwards;
+}
+
+.sparkline-line--empty {
+  animation: none;
+  stroke-dasharray: 4 4;
+  stroke-dashoffset: 0;
+  opacity: 0.5;
+}
+
+.sparkline-area {
+  fill: rgba(255, 255, 255, 0.05);
+}
+
+.sparkline-label {
+  fill: rgba(0, 0, 0, 0.3);
+  font-size: 10px;
+}
+
+.sparkline-empty-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+@keyframes sparkline-dash {
+  to { stroke-dashoffset: 0; }
+}

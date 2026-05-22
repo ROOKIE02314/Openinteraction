@@ -1,0 +1,310 @@
+.ao-error {
+  color: #8a4a4a;
+}
+
+.ao-loading {
+  color: var(--color-text-secondary);
+}
+
+.ao-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+.ao-kpi-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-6);
+  min-height: 140px;
+}
+
+.ao-kpi-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+.ao-kpi-value {
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.ao-kpi-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.ao-kpi-foot-text {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ao-growth-pill {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.ao-growth-pill--neg {
+  background: var(--color-glass-tag);
+  color: var(--color-text-secondary);
+}
+
+.ao-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-circle);
+  background: var(--color-status-active);
+  box-shadow: var(--shadow-dot);
+  animation: ao-pulse 1.6s ease-in-out infinite;
+}
+
+.ao-pulse-dot--idle {
+  animation: none;
+  opacity: 0.4;
+}
+
+@keyframes ao-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.ao-mid-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-6);
+  height: 256px;
+}
+
+.ao-chart-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+  overflow: hidden;
+}
+
+.ao-chart-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-4);
+}
+
+.ao-card-title {
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.ao-card-subtitle {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: var(--space-1) 0 0;
+}
+
+.ao-chart-body {
+  flex: 1;
+  position: relative;
+}
+
+.ao-tags-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+}
+
+.ao-tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  flex: 1;
+  align-content: flex-start;
+}
+
+.ao-tag-pill {
+  background: var(--color-glass-tag);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  font-size: 12px;
+  color: var(--color-text-primary);
+}
+
+.ao-tag-pill--strong {
+  background: var(--color-glass-user);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ao-tags-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-glass-border);
+}
+
+.ao-tags-foot-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ao-tags-foot-value {
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.ao-tags-empty {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.ao-table-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.ao-table-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--color-glass-border);
+}
+
+.ao-table-head-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.ao-table-icon-btn {
+  background: var(--color-glass-tag);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ao-table-icon-btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ao-filter-select {
+  background: var(--color-glass-tag);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 12px;
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+.ao-table-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.ao-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.ao-table thead tr {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-text-secondary);
+}
+
+.ao-table th {
+  padding: var(--space-4) var(--space-6);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ao-table tbody tr {
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-standard);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ao-table tbody tr:hover {
+  background: var(--color-glass-hover);
+}
+
+.ao-table td {
+  padding: var(--space-4) var(--space-6);
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.ao-cell-mono {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 12px;
+}
+
+.ao-cell-medium {
+  font-weight: var(--font-weight-medium);
+}
+
+.ao-project-chip {
+  display: inline-block;
+  background: var(--color-glass-tag);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-md);
+  padding: 2px var(--space-3);
+  font-size: 12px;
+  color: var(--color-text-primary);
+}
+
+.ao-status-badge {
+  padding: 4px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  background: var(--color-glass-highlight);
+  color: var(--color-text-primary);
+}
+
+.ao-status-badge--inprogress {
+  background: var(--color-status-warn-bg);
+}
+
+.ao-status-badge--abandoned {
+  background: rgba(200, 200, 200, 0.4);
+  color: var(--color-text-secondary);
+}
+
+.ao-table-empty {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.ao-table-empty a {
+  color: var(--color-text-primary);
+  text-decoration: underline;
+}

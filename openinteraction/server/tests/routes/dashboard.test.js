@@ -150,6 +150,107 @@ describe('Dashboard routes — POST /ask', () => {
   });
 });
 
+describe('Dashboard routes — POST /api/dashboard/projects', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('creates a project and returns 201', async () => {
+    const res = await request(app)
+      .post('/api/dashboard/projects')
+      .send({
+        name: '淘宝',
+        product_context: '中国最大的综合电商平台',
+        core_topics: [
+          { id: 'browse', description: '浏览商品体验' },
+          { id: 'checkout', description: '下单支付体验' },
+        ],
+      })
+      .expect(201);
+
+    expect(res.body).toMatchObject({
+      name: '淘宝',
+    });
+    expect(res.body.id).toBeDefined();
+    expect(res.body.created_at).toBeDefined();
+
+    // Verify in DB
+    const db = getDb();
+    const row = db.prepare('SELECT * FROM projects WHERE id = ?').get(res.body.id);
+    expect(row.name).toBe('淘宝');
+    expect(row.product_context).toBe('中国最大的综合电商平台');
+    expect(JSON.parse(row.core_topics)).toEqual([
+      { id: 'browse', description: '浏览商品体验' },
+      { id: 'checkout', description: '下单支付体验' },
+    ]);
+  });
+
+  it('returns 400 when name is missing', async () => {
+    await request(app)
+      .post('/api/dashboard/projects')
+      .send({ core_topics: [{ id: 'x', description: 'y' }] })
+      .expect(400);
+  });
+
+  it('returns 400 when core_topics is empty', async () => {
+    await request(app)
+      .post('/api/dashboard/projects')
+      .send({ name: '淘宝', core_topics: [] })
+      .expect(400);
+  });
+
+  it('returns 400 when core_topics is missing', async () => {
+    await request(app)
+      .post('/api/dashboard/projects')
+      .send({ name: '淘宝' })
+      .expect(400);
+  });
+});
+
+describe('Dashboard routes — overview', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('GET /api/dashboard/overview returns documented shape with empty data', async () => {
+    const res = await request(app).get('/api/dashboard/overview').expect(200);
+    expect(res.body).toMatchObject({
+      total_interviews: 0,
+      in_progress_interviews: 0,
+      total_projects: 0,
+      interview_growth_pct: null,
+      total_keyword_count: 0,
+      trending_tags: [],
+      recent_interviews: [],
+    });
+    expect(res.body.monthly_interviews).toHaveLength(7);
+  });
+
+  it('GET /api/dashboard/overview reflects inserted data', async () => {
+    const db = getDb();
+    const pid = uuid();
+    db.prepare('INSERT INTO projects (id, name, product_context, core_topics) VALUES (?, ?, ?, ?)').run(
+      pid, 'P1', 'ctx', '[]'
+    );
+    const iid = uuid();
+    db.prepare('INSERT INTO interviews (id, project_id, share_token, status, started_at, ended_at) VALUES (?, ?, ?, ?, ?, ?)').run(
+      iid, pid, uuid(), 'in_progress', '2026-05-01 10:00:00', null
+    );
+
+    const res = await request(app).get('/api/dashboard/overview').expect(200);
+    expect(res.body.total_projects).toBe(1);
+    expect(res.body.total_interviews).toBe(1);
+    expect(res.body.in_progress_interviews).toBe(1);
+    expect(res.body.recent_interviews).toHaveLength(1);
+    expect(res.body.recent_interviews[0].project_name).toBe('P1');
+    expect(res.body.recent_interviews[0].short_id).toBe(`INT-${iid.slice(0, 4)}`);
+  });
+});
+
 describe('Dashboard router mounted on app', () => {
   it('GET /api/dashboard/projects via real app returns 200', async () => {
     process.env.DB_PATH = TEST_DB;

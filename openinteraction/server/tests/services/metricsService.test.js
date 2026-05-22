@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { initDb, getDb } from '../../src/db/database.js';
-import { getProjectsOverview, getProjectMetrics } from '../../src/services/metricsService.js';
+import { getProjectsOverview, getProjectMetrics, getDashboardOverview } from '../../src/services/metricsService.js';
 import { v4 as uuid } from 'uuid';
 import fs from 'fs';
 
@@ -154,5 +154,207 @@ describe('getProjectMetrics', () => {
     expect(m.keywords.pain_point).toHaveLength(10);
     expect(m.keywords.pain_point[0]).toEqual({ label: 'label-12', count: 12 });
     expect(m.keywords.pain_point[9]).toEqual({ label: 'label-3', count: 3 });
+  });
+});
+
+describe('getDashboardOverview — counts', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('returns zero counts on empty database', () => {
+    const o = getDashboardOverview(getDb());
+    expect(o.total_interviews).toBe(0);
+    expect(o.in_progress_interviews).toBe(0);
+    expect(o.total_projects).toBe(0);
+  });
+
+  it('counts projects, total interviews, and in_progress interviews', () => {
+    const p1 = insertProject('A');
+    const p2 = insertProject('B');
+    insertInterview(p1, 'completed', '2026-05-01 10:00:00', '2026-05-01 10:10:00');
+    insertInterview(p1, 'in_progress', '2026-05-02 10:00:00', null);
+    insertInterview(p2, 'in_progress', '2026-05-03 10:00:00', null);
+    insertInterview(p2, 'abandoned', '2026-05-04 10:00:00', null);
+
+    const o = getDashboardOverview(getDb());
+    expect(o.total_projects).toBe(2);
+    expect(o.total_interviews).toBe(4);
+    expect(o.in_progress_interviews).toBe(2);
+  });
+});
+
+describe('getDashboardOverview — growth_pct', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  function thisMonth(day) {
+    const d = new Date();
+    d.setDate(1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')} 10:00:00`;
+  }
+
+  function lastMonth(day) {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')} 10:00:00`;
+  }
+
+  it('returns null when previous month has zero interviews', () => {
+    const p = insertProject('A');
+    insertInterview(p, 'completed', thisMonth(1), thisMonth(1));
+    insertInterview(p, 'completed', thisMonth(2), thisMonth(2));
+
+    const o = getDashboardOverview(getDb());
+    expect(o.interview_growth_pct).toBeNull();
+  });
+
+  it('computes growth percent rounded to integer', () => {
+    const p = insertProject('A');
+    for (let i = 1; i <= 10; i++) insertInterview(p, 'completed', lastMonth(i), lastMonth(i));
+    for (let i = 1; i <= 12; i++) insertInterview(p, 'completed', thisMonth(i), thisMonth(i));
+
+    const o = getDashboardOverview(getDb());
+    expect(o.interview_growth_pct).toBe(20);
+  });
+
+  it('handles negative growth', () => {
+    const p = insertProject('A');
+    for (let i = 1; i <= 10; i++) insertInterview(p, 'completed', lastMonth(i), lastMonth(i));
+    for (let i = 1; i <= 5; i++) insertInterview(p, 'completed', thisMonth(i), thisMonth(i));
+
+    const o = getDashboardOverview(getDb());
+    expect(o.interview_growth_pct).toBe(-50);
+  });
+});
+
+describe('getDashboardOverview — monthly_interviews', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('returns 7 month buckets ordered ascending including current month', () => {
+    const o = getDashboardOverview(getDb());
+    expect(o.monthly_interviews).toHaveLength(7);
+
+    const months = o.monthly_interviews.map(b => b.month);
+    const sorted = [...months].sort();
+    expect(months).toEqual(sorted);
+
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    expect(months[months.length - 1]).toBe(currentMonth);
+
+    for (const b of o.monthly_interviews) expect(b.count).toBe(0);
+  });
+
+  it('zero-fills empty months and counts present months', () => {
+    const p = insertProject('A');
+    const now = new Date();
+    const m = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    insertInterview(p, 'completed', `${m}-01 10:00:00`, `${m}-01 10:10:00`);
+    insertInterview(p, 'completed', `${m}-02 10:00:00`, `${m}-02 10:10:00`);
+    insertInterview(p, 'completed', `${m}-03 10:00:00`, `${m}-03 10:10:00`);
+
+    const o = getDashboardOverview(getDb());
+    const last = o.monthly_interviews[o.monthly_interviews.length - 1];
+    expect(last.month).toBe(m);
+    expect(last.count).toBe(3);
+
+    const earlier = o.monthly_interviews.slice(0, -1);
+    for (const b of earlier) expect(b.count).toBe(0);
+  });
+});
+
+describe('getDashboardOverview — trending_tags', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('returns top tags sorted by count desc with label asc tie-break', () => {
+    const p = insertProject('A');
+    const i = insertInterview(p, 'completed', '2026-05-01 10:00:00', '2026-05-01 10:10:00');
+
+    insertAnnotation(i, 'pain_point', 'Onboarding');
+    insertAnnotation(i, 'pain_point', 'Onboarding');
+    insertAnnotation(i, 'pain_point', 'Onboarding');
+    insertAnnotation(i, 'pain_point', 'Navigation');
+    insertAnnotation(i, 'feature_request', 'Mobile');
+    insertAnnotation(i, 'feature_request', 'Mobile');
+    insertAnnotation(i, 'positive_feedback', 'Speed');
+    insertAnnotation(i, 'positive_feedback', 'Search');
+
+    const o = getDashboardOverview(getDb());
+    expect(o.trending_tags[0]).toEqual({ label: 'Onboarding', count: 3 });
+    expect(o.trending_tags[1]).toEqual({ label: 'Mobile', count: 2 });
+    expect(o.trending_tags[2]).toEqual({ label: 'Navigation', count: 1 });
+    expect(o.trending_tags[3]).toEqual({ label: 'Search', count: 1 });
+    expect(o.trending_tags[4]).toEqual({ label: 'Speed', count: 1 });
+    expect(o.total_keyword_count).toBe(5);
+  });
+
+  it('caps trending_tags at 9 entries', () => {
+    const p = insertProject('A');
+    const i = insertInterview(p, 'completed', '2026-05-01 10:00:00', '2026-05-01 10:10:00');
+    for (let n = 0; n < 12; n++) insertAnnotation(i, 'pain_point', `tag-${String(n).padStart(2, '0')}`);
+
+    const o = getDashboardOverview(getDb());
+    expect(o.trending_tags).toHaveLength(9);
+    expect(o.total_keyword_count).toBe(12);
+  });
+
+  it('returns empty arrays when no annotations', () => {
+    const o = getDashboardOverview(getDb());
+    expect(o.trending_tags).toEqual([]);
+    expect(o.total_keyword_count).toBe(0);
+  });
+});
+
+describe('getDashboardOverview — recent_interviews', () => {
+  beforeEach(() => initDb(TEST_DB));
+  afterEach(() => {
+    getDb().close();
+    try { fs.unlinkSync(TEST_DB); } catch {}
+  });
+
+  it('returns rows ordered by started_at desc with project_name and short_id', () => {
+    const p = insertProject('Alpha');
+    const i1 = insertInterview(p, 'completed', '2026-05-01 10:00:00', '2026-05-01 10:10:00');
+    const i2 = insertInterview(p, 'in_progress', '2026-05-02 10:00:00', null);
+
+    const o = getDashboardOverview(getDb());
+    expect(o.recent_interviews).toHaveLength(2);
+    expect(o.recent_interviews[0].id).toBe(i2);
+    expect(o.recent_interviews[1].id).toBe(i1);
+    expect(o.recent_interviews[0].project_name).toBe('Alpha');
+    expect(o.recent_interviews[0].project_id).toBe(p);
+    expect(o.recent_interviews[0].status).toBe('in_progress');
+    expect(o.recent_interviews[0].short_id).toBe(`INT-${i2.slice(0, 4)}`);
+    expect(o.recent_interviews[0].started_at).toBe('2026-05-02 10:00:00');
+  });
+
+  it('caps recent_interviews at 20 rows', () => {
+    const p = insertProject('Alpha');
+    for (let n = 0; n < 25; n++) {
+      const day = String(n + 1).padStart(2, '0');
+      insertInterview(p, 'completed', `2026-05-${day} 10:00:00`, `2026-05-${day} 10:10:00`);
+    }
+    const o = getDashboardOverview(getDb());
+    expect(o.recent_interviews).toHaveLength(20);
+  });
+
+  it('returns empty array when no interviews', () => {
+    const o = getDashboardOverview(getDb());
+    expect(o.recent_interviews).toEqual([]);
   });
 });
