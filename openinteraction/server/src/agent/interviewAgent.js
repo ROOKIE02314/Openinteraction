@@ -98,4 +98,94 @@ export class InterviewAgent {
       };
     }
   }
+
+  async *processMessageStream(userMessage) {
+    // Save user message
+    this.conversation.addMessage('user', userMessage);
+
+    // Load project config for system prompt
+    const db = getDb();
+    const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(this.projectId);
+    const systemPrompt = buildSystemPrompt(project);
+
+    // Get conversation history
+    const messages = this.conversation.getMessagesForLLM();
+
+    try {
+      let finalResponse = '';
+      let allToolCalls = [];
+      let interviewStatus = 'in_progress';
+      let currentMessages = messages;
+      let maxIterations = 5;
+
+      while (maxIterations > 0) {
+        maxIterations--;
+
+        let streamContent = '';
+        let toolCallsFromStream = null;
+
+        const stream = this.llm.chatStream({
+          system: systemPrompt,
+          messages: currentMessages,
+          tools: toolDefinitions,
+        });
+
+        for await (const chunk of stream) {
+          if (chunk.type === 'text') {
+            streamContent += chunk.content;
+            yield chunk;
+          } else if (chunk.type === 'tool_call') {
+            toolCallsFromStream = chunk.toolCalls;
+          }
+          // Skip 'done' from chatStream — we yield our own 'done' at the end
+        }
+
+        // If no tool calls, we're done
+        if (!toolCallsFromStream) {
+          finalResponse = streamContent || finalResponse;
+          break;
+        }
+
+        // Execute tool calls
+        finalResponse = streamContent || finalResponse;
+        allToolCalls = [...allToolCalls, ...toolCallsFromStream];
+
+        for (const toolCall of toolCallsFromStream) {
+          executeTool(toolCall.name, toolCall.arguments, this.interviewId);
+
+          if (toolCall.name === 'end_interview') {
+            interviewStatus = 'completed';
+          }
+        }
+
+        // Build tool call context messages for the next LLM call
+        const toolCallMessages = toolCallsFromStream.map(tc => ({
+          role: 'assistant',
+          content: null,
+          tool_calls: [{ id: tc.id, type: 'function', function: { name: tc.name, arguments: JSON.stringify(tc.arguments) } }],
+        }));
+
+        const toolResultMessages = toolCallsFromStream.map(tc => ({
+          role: 'tool',
+          tool_call_id: tc.id,
+          content: JSON.stringify({ success: true }),
+        }));
+
+        currentMessages = [...messages, ...toolCallMessages, ...toolResultMessages];
+      }
+
+      // Save assistant message
+      this.conversation.addMessage('assistant', finalResponse, allToolCalls.length > 0 ? allToolCalls : null);
+
+      yield { type: 'done', interviewStatus };
+    } catch (error) {
+      console.error('InterviewAgent stream error:', error);
+
+      const errorMsg = '抱歉，我这边出了点小问题，你能再说一遍吗？';
+      this.conversation.addMessage('assistant', errorMsg);
+
+      yield { type: 'error', message: error.message };
+      yield { type: 'done', interviewStatus: 'in_progress' };
+    }
+  }
 }
