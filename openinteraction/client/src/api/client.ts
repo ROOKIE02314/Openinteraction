@@ -50,10 +50,11 @@ export function sendMessage(
 }
 
 export interface SSEEvent {
-  type: 'text' | 'audio' | 'done' | 'error';
+  type: 'text' | 'audio' | 'done' | 'error' | 'emotion';
   chunk?: string;
   interview_status?: string;
   message?: string;
+  state?: string;
 }
 
 export async function sendMessageStream(
