@@ -55,3 +55,39 @@
   backdrop-filter: var(--blur-card);
   -webkit-backdrop-filter: var(--blur-card);
 }
+
+/* Mobile avatar in header */
+.chat-header-avatar-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .chat-header-avatar-mobile {
+    display: flex;
+    position: absolute;
+    left: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .chat-header-avatar-mobile .avatar-panel {
+    display: flex;
+    width: auto;
+    min-width: auto;
+    height: auto;
+    position: static;
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-right: none;
+  }
+
+  .chat-header-avatar-mobile .avatar-svg {
+    width: 36px;
+    height: 42px;
+  }
+
+  .chat-header-avatar-mobile .avatar-panel-label {
+    display: none;
+  }
+}

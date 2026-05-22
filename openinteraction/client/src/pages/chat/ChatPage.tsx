@@ -154,6 +154,9 @@ function ChatPage() {
       <AvatarPanel emotion={agentEmotion} />
       <div className="chat-main">
         <div className="chat-header">
+          <div className="chat-header-avatar-mobile">
+            <AvatarPanel emotion={agentEmotion} />
+          </div>
           <span className="chat-header-dot" />
           <span className="chat-header-title">产品体验访谈</span>
         </div>
