@@ -90,6 +90,8 @@ router.post('/stream', async (req, res) => {
             ttsFailed = true;
           }
         }
+      } else if (chunk.type === 'emotion') {
+        sendEvent('emotion', { state: chunk.state });
       } else if (chunk.type === 'done') {
         sendEvent('done', { interview_status: chunk.interviewStatus });
       } else if (chunk.type === 'error') {

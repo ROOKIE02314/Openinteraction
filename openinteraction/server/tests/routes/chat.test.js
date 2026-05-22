@@ -101,9 +101,12 @@ describe('Chat Stream Routes', () => {
       interviewId, projectId, 'stream-test-token'
     );
 
-    // Default mock: yield a text chunk, then done
     mockProcessMessageStream = async function* () {
+      yield { type: 'emotion', state: 'listening' };
       yield { type: 'text', content: '你好！' };
+      yield { type: 'emotion', state: 'speaking' };
+      yield { type: 'text', content: '很高兴认识你。' };
+      yield { type: 'emotion', state: 'idle' };
       yield { type: 'done', interviewStatus: 'in_progress' };
     };
   });
@@ -167,5 +170,18 @@ describe('Chat Stream Routes', () => {
     // Should contain a done event at the end
     expect(body).toContain('event: done');
     expect(body).toContain('"interview_status"');
+  });
+
+  it('POST /api/chat/stream sends emotion SSE events', async () => {
+    const res = await request(app)
+      .post('/api/chat/stream')
+      .send({ interview_id: interviewId, message: '你好' });
+
+    const body = res.text;
+
+    expect(body).toContain('event: emotion');
+    expect(body).toContain('"state":"listening"');
+    expect(body).toContain('"state":"speaking"');
+    expect(body).toContain('"state":"idle"');
   });
 });
