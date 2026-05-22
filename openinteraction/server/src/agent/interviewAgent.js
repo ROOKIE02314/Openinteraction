@@ -117,6 +117,8 @@ export class InterviewAgent {
       let interviewStatus = 'in_progress';
       let currentMessages = messages;
       let maxIterations = 5;
+      let hasEmittedSpeaking = false;
+      yield { type: 'emotion', state: 'listening' };
 
       while (maxIterations > 0) {
         maxIterations--;
@@ -132,6 +134,10 @@ export class InterviewAgent {
 
         for await (const chunk of stream) {
           if (chunk.type === 'text') {
+            if (!hasEmittedSpeaking) {
+              yield { type: 'emotion', state: 'speaking' };
+              hasEmittedSpeaking = true;
+            }
             streamContent += chunk.content;
             yield chunk;
           } else if (chunk.type === 'tool_call') {
@@ -146,6 +152,9 @@ export class InterviewAgent {
           break;
         }
 
+        // Agent is thinking (calling tools)
+        yield { type: 'emotion', state: 'thinking' };
+
         // Execute tool calls
         finalResponse = streamContent || finalResponse;
         allToolCalls = [...allToolCalls, ...toolCallsFromStream];
@@ -155,6 +164,7 @@ export class InterviewAgent {
 
           if (toolCall.name === 'end_interview') {
             interviewStatus = 'completed';
+            yield { type: 'emotion', state: 'happy' };
           }
         }
 
