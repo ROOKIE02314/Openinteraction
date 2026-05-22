@@ -1,0 +1,167 @@
+/* === Base === */
+.avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.avatar-svg {
+  overflow: visible;
+}
+
+/* === Head === */
+.avatar-head {
+  fill: var(--color-text-secondary);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+  transform-origin: 60px 65px;
+  transition: transform 400ms ease-in-out;
+}
+
+/* === Eyes === */
+.avatar-eye {
+  fill: var(--color-text-strong);
+  transition: rx 400ms ease-in-out, ry 400ms ease-in-out, cy 400ms ease-in-out;
+}
+
+.avatar-eye-highlight {
+  fill: var(--color-glass-highlight);
+  transition: opacity 400ms ease-in-out;
+}
+
+/* === Mouth === */
+.avatar-mouth {
+  fill: var(--color-text-strong);
+  transition: rx 400ms ease-in-out, ry 400ms ease-in-out, cy 400ms ease-in-out;
+}
+
+/* === Thought bubble (hidden by default) === */
+.avatar-bubble {
+  fill: var(--color-text-secondary);
+  opacity: 0;
+  transition: opacity 300ms ease-in-out;
+}
+
+/* === Breathing animation (idle only) === */
+.avatar--idle .avatar-head {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* === Blink animation (idle only) === */
+.avatar--idle .avatar-eye {
+  animation: blink 4.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 42%, 46%, 100% { ry: 7; }
+  44% { ry: 1; }
+}
+
+/* === IDLE state === */
+.avatar--idle .avatar-eye {
+  rx: 7;
+  ry: 7;
+}
+
+.avatar--idle .avatar-mouth {
+  rx: 12;
+  ry: 3;
+  cy: 82;
+}
+
+/* === LISTENING state === */
+.avatar--listening .avatar-head {
+  transform: translateY(3px);
+}
+
+.avatar--listening .avatar-eye {
+  rx: 8;
+  ry: 8;
+}
+
+.avatar--listening .avatar-mouth {
+  rx: 6;
+  ry: 6;
+  cy: 84;
+}
+
+/* === THINKING state === */
+.avatar--thinking .avatar-head {
+  transform: rotate(-5deg);
+}
+
+.avatar--thinking .avatar-eye {
+  rx: 7;
+  ry: 4;
+}
+
+.avatar--thinking .avatar-mouth {
+  rx: 10;
+  ry: 3;
+  d: path("M 48 82 Q 60 78 72 82");
+}
+
+.avatar--thinking .avatar-bubble {
+  opacity: 0.6;
+  animation: bubbleFloat 2s ease-in-out infinite;
+}
+
+.avatar--thinking .avatar-bubble-1 { animation-delay: 0s; }
+.avatar--thinking .avatar-bubble-2 { animation-delay: 0.3s; }
+.avatar--thinking .avatar-bubble-3 { animation-delay: 0.6s; }
+
+@keyframes bubbleFloat {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(-4px); opacity: 0.9; }
+}
+
+/* === SPEAKING state === */
+.avatar--speaking .avatar-eye {
+  rx: 7;
+  ry: 7;
+}
+
+.avatar--speaking .avatar-mouth {
+  rx: 12;
+  ry: 3;
+  animation: mouthSpeak 0.6s ease-in-out infinite;
+}
+
+@keyframes mouthSpeak {
+  0%, 100% { ry: 3; }
+  50% { ry: 6; }
+}
+
+/* === HAPPY state === */
+.avatar--happy .avatar-eye {
+  rx: 7;
+  ry: 2;
+  cy: 56;
+}
+
+.avatar--happy .avatar-eye-highlight {
+  opacity: 0;
+}
+
+.avatar--happy .avatar-mouth {
+  rx: 16;
+  ry: 8;
+  cy: 80;
+}
+
+.avatar--happy .avatar-head {
+  animation: happyBounce 600ms ease-out;
+}
+
+@keyframes happyBounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.06); }
+  60% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
