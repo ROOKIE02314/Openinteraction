@@ -104,7 +104,6 @@
 .avatar--thinking .avatar-mouth {
   rx: 10;
   ry: 3;
-  d: path("M 48 82 Q 60 78 72 82");
 }
 
 .avatar--thinking .avatar-bubble {
