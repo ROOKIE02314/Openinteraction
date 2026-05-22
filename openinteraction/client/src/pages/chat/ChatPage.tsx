@@ -6,6 +6,8 @@ import MessageList from '../../components/message-list/MessageList';
 import MessageInput from '../../components/message-input/MessageInput';
 import AudioPlayer from '../../components/audio-player/AudioPlayer';
 import type { AudioPlayerHandle } from '../../components/audio-player/AudioPlayer';
+import AvatarPanel from '../../components/agent-avatar/AvatarPanel';
+import type { EmotionState } from '../../components/agent-avatar/AgentAvatar';
 import type { Message } from '../../components/message-list/MessageList';
 import './chat.css';
 
@@ -19,6 +21,7 @@ function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [streamingContent, setStreamingContent] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
+  const [agentEmotion, setAgentEmotion] = useState<EmotionState>('idle');
 
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -62,6 +65,7 @@ function ChatPage() {
     setStreamingContent('');
     streamedTextRef.current = '';
     currentAudioChunksRef.current = [];
+    setAgentEmotion('listening');
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -82,6 +86,9 @@ function ChatPage() {
                 audioPlayerRef.current?.enqueueChunk(event.chunk);
                 setIsPlaying(true);
               }
+              break;
+            case 'emotion':
+              setAgentEmotion(event.state as EmotionState);
               break;
             case 'done': {
               const finalText = streamedTextRef.current;
@@ -108,6 +115,7 @@ function ChatPage() {
             case 'error':
               setError(event.message || '流式传输出错，请重试');
               setStreamingContent('');
+              setAgentEmotion('idle');
               break;
           }
         },
@@ -125,6 +133,7 @@ function ChatPage() {
           ...msgs,
           { role: 'assistant' as const, content: result.response },
         ]);
+        setAgentEmotion('idle');
         if (result.interview_status === 'completed') {
           setTimeout(
             () => navigate(`/interview/${token}/complete`, { state: { interview } }),
@@ -142,21 +151,24 @@ function ChatPage() {
 
   return (
     <div className="chat">
-      <div className="chat-header">
-        <span className="chat-header-dot" />
-        <span className="chat-header-title">产品体验访谈</span>
+      <AvatarPanel emotion={agentEmotion} />
+      <div className="chat-main">
+        <div className="chat-header">
+          <span className="chat-header-dot" />
+          <span className="chat-header-title">产品体验访谈</span>
+        </div>
+        <MessageList
+          messages={messages}
+          loading={loading}
+          streamingContent={streamingContent}
+          isPlaying={isPlaying}
+          onReplay={handleReplay}
+          onStopAudio={handleStopAudio}
+        />
+        {error && <div className="chat-error" role="alert">{error}</div>}
+        <MessageInput onSend={handleSend} disabled={loading} />
+        <AudioPlayer ref={audioPlayerRef} />
       </div>
-      <MessageList
-        messages={messages}
-        loading={loading}
-        streamingContent={streamingContent}
-        isPlaying={isPlaying}
-        onReplay={handleReplay}
-        onStopAudio={handleStopAudio}
-      />
-      {error && <div className="chat-error" role="alert">{error}</div>}
-      <MessageInput onSend={handleSend} disabled={loading} />
-      <AudioPlayer ref={audioPlayerRef} />
     </div>
   );
 }
