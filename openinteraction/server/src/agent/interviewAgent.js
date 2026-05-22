@@ -187,6 +187,7 @@ export class InterviewAgent {
       // Save assistant message
       this.conversation.addMessage('assistant', finalResponse, allToolCalls.length > 0 ? allToolCalls : null);
 
+      yield { type: 'emotion', state: 'idle' };
       yield { type: 'done', interviewStatus };
     } catch (error) {
       console.error('InterviewAgent stream error:', error);
@@ -195,6 +196,7 @@ export class InterviewAgent {
       this.conversation.addMessage('assistant', errorMsg);
 
       yield { type: 'error', message: error.message };
+      yield { type: 'emotion', state: 'idle' };
       yield { type: 'done', interviewStatus: 'in_progress' };
     }
   }
