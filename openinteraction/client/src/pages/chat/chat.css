@@ -1,10 +1,59 @@
 .chat {
+  --color-text-primary: rgba(255, 255, 255, 0.92);
+  --color-text-secondary: rgba(255, 255, 255, 0.5);
+  --color-text-strong: #090909;
+  --color-glass: rgba(255, 255, 255, 0.055);
+  --color-glass-hover: rgba(255, 255, 255, 0.085);
+  --color-glass-user: rgba(244, 244, 244, 0.94);
+  --color-glass-input-focus: rgba(255, 255, 255, 0.09);
+  --color-glass-border: rgba(255, 255, 255, 0.14);
+  --color-glass-highlight: rgba(255, 255, 255, 0.09);
+  --color-glass-inset-soft: rgba(255, 255, 255, 0.11);
+  --color-glass-inset-strong: rgba(255, 255, 255, 0.16);
+  --color-action-bg: rgba(255, 255, 255, 0.08);
+  --color-action-bg-hover: rgba(255, 255, 255, 0.15);
+  --color-action-bg-primary: #f4f4f4;
+  --color-dot: rgba(238, 196, 17, 0.92);
+  --accent-glow: rgba(238, 196, 17, 0.34);
+  --shadow-bubble:
+    0 8px 28px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-input:
+    0 18px 50px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-input-focus:
+    0 22px 60px rgba(0, 0, 0, 0.58),
+    0 0 0 1px rgba(238, 196, 17, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
   height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(300px, 36%) minmax(0, 1fr);
   position: relative;
   overflow: hidden;
+  color-scheme: dark;
+  background:
+    radial-gradient(circle, rgba(238, 196, 17, 0.3) 0 0.45px, transparent 0.68px) 0 0 / 3px 3px,
+    radial-gradient(circle, rgba(104, 69, 0, 0.28) 0 0.4px, transparent 0.65px) 1px 1px / 3px 3px,
+    #030303;
+}
+
+.chat-conversation {
+  height: 100dvh;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 46%, rgba(255, 255, 255, 0.025), transparent 56%);
+}
+
+.chat-conversation .msg-input-container {
+  position: absolute;
+}
+
+.chat-conversation .msg-input-submit {
+  color: #090909;
 }
 
 .chat-header {
@@ -34,14 +83,39 @@
 }
 
 .chat-error {
-  margin: 0 var(--space-6) var(--space-3);
+  width: calc(100% - (var(--space-6) * 2));
+  max-width: 632px;
+  margin: 0 auto var(--space-3);
   padding: var(--space-3) var(--space-4);
   text-align: center;
-  color: #8a3a3a;
+  color: #ffb8ad;
   font-size: 13px;
-  background: rgba(255, 120, 100, 0.18);
-  border: 1px solid rgba(255, 120, 100, 0.3);
+  background: rgba(150, 44, 34, 0.24);
+  border: 1px solid rgba(255, 120, 100, 0.28);
   border-radius: var(--radius-md);
   backdrop-filter: var(--blur-card);
   -webkit-backdrop-filter: var(--blur-card);
+}
+
+@media (max-width: 900px) {
+  .chat {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 136px minmax(0, 1fr);
+  }
+
+  .chat-conversation {
+    height: auto;
+  }
+
+  .chat-header {
+    padding: var(--space-4) var(--space-6);
+  }
+
+  .chat-conversation .msg-input-container {
+    bottom: var(--space-5);
+  }
+
+  .chat-conversation .msg-list {
+    padding-bottom: 112px;
+  }
 }

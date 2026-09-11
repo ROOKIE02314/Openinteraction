@@ -7,11 +7,24 @@ export interface AudioPlayerHandle {
   replay: (allChunks: string[]) => void;
 }
 
-const AudioPlayer = forwardRef<AudioPlayerHandle>(function AudioPlayer(_props, ref) {
+export interface AudioPlayerProps {
+  onPlaybackStateChange?: (playing: boolean) => void;
+}
+
+const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(function AudioPlayer(
+  { onPlaybackStateChange },
+  ref,
+) {
   const ctxRef = useRef<AudioContext | null>(null);
   const scheduledRef = useRef<AudioBufferSourceNode[]>([]);
   const isPlayingRef = useRef(false);
   const nextTimeRef = useRef(0);
+
+  const updatePlaying = useCallback((playing: boolean) => {
+    if (isPlayingRef.current === playing) return;
+    isPlayingRef.current = playing;
+    onPlaybackStateChange?.(playing);
+  }, [onPlaybackStateChange]);
 
   const getCtx = useCallback((): AudioContext => {
     if (!ctxRef.current || ctxRef.current.state === 'closed') {
@@ -33,15 +46,16 @@ const AudioPlayer = forwardRef<AudioPlayerHandle>(function AudioPlayer(_props, r
     nextTimeRef.current = startTime + buffer.duration;
 
     scheduledRef.current.push(source);
-    isPlayingRef.current = true;
+    updatePlaying(true);
 
     source.onended = () => {
       scheduledRef.current = scheduledRef.current.filter((s) => s !== source);
       if (scheduledRef.current.length === 0) {
-        isPlayingRef.current = false;
+        nextTimeRef.current = 0;
+        updatePlaying(false);
       }
     };
-  }, []);
+  }, [updatePlaying]);
 
   const enqueueChunk = useCallback((base64Chunk: string) => {
     const ctx = getCtx();
@@ -62,14 +76,14 @@ const AudioPlayer = forwardRef<AudioPlayerHandle>(function AudioPlayer(_props, r
       try { s.stop(); } catch { /* already stopped */ }
     });
     scheduledRef.current = [];
-    isPlayingRef.current = false;
     nextTimeRef.current = 0;
+    updatePlaying(false);
 
     if (ctxRef.current && ctxRef.current.state !== 'closed') {
       ctxRef.current.close();
       ctxRef.current = null;
     }
-  }, []);
+  }, [updatePlaying]);
 
   const replay = useCallback((allChunks: string[]) => {
     stop();

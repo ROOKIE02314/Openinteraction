@@ -26,11 +26,12 @@ type SpeechRecognitionLike = EventTarget & {
   onend: (() => void) | null;
 };
 
-interface MessageInputProps {
+export interface MessageInputProps {
   onSend: (text: string) => void;
   disabled?: boolean;
   value?: string;
   onValueChange?: (next: string) => void;
+  onRecordingChange?: (recording: boolean) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -52,7 +53,13 @@ function formatTime(seconds: number): string {
 /* ------------------------------------------------------------------ */
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
-function MessageInput({ onSend, disabled = false, value, onValueChange }: MessageInputProps) {
+function MessageInput({
+  onSend,
+  disabled = false,
+  value,
+  onValueChange,
+  onRecordingChange,
+}: MessageInputProps) {
   /* ---- controlled / uncontrolled ---- */
   const isControlled = value !== undefined && onValueChange !== undefined;
   const [internal, setInternal] = useState('');
@@ -76,6 +83,10 @@ function MessageInput({ onSend, disabled = false, value, onValueChange }: Messag
 
   const SpeechRecognitionCtor = useRef(getSpeechRecognition()).current;
   const sttSupported = SpeechRecognitionCtor !== null;
+
+  useEffect(() => {
+    onRecordingChange?.(isRecording);
+  }, [isRecording, onRecordingChange]);
 
   /* ---- auto-resize textarea ---- */
   useEffect(() => {

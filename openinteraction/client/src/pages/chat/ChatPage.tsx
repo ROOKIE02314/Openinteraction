@@ -6,6 +6,8 @@ import MessageList from '../../components/message-list/MessageList';
 import MessageInput from '../../components/message-input/MessageInput';
 import AudioPlayer from '../../components/audio-player/AudioPlayer';
 import type { AudioPlayerHandle } from '../../components/audio-player/AudioPlayer';
+import PixelCompanion from '../../components/pixel-companion/PixelCompanion';
+import type { CompanionState } from '../../components/pixel-companion/PixelCompanion';
 import type { Message } from '../../components/message-list/MessageList';
 import './chat.css';
 
@@ -19,6 +21,7 @@ function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [streamingContent, setStreamingContent] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
   const audioPlayerRef = useRef<AudioPlayerHandle>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -40,12 +43,10 @@ function ChatPage() {
 
   const handleStopAudio = () => {
     audioPlayerRef.current?.stop();
-    setIsPlaying(false);
   };
 
   const handleReplay = (audioChunks: string[]) => {
     audioPlayerRef.current?.replay(audioChunks);
-    setIsPlaying(true);
   };
 
   const handleSend = async (text: string) => {
@@ -80,7 +81,6 @@ function ChatPage() {
               if (event.chunk) {
                 currentAudioChunksRef.current.push(event.chunk);
                 audioPlayerRef.current?.enqueueChunk(event.chunk);
-                setIsPlaying(true);
               }
               break;
             case 'done': {
@@ -140,23 +140,40 @@ function ChatPage() {
     }
   };
 
+  const companionState: CompanionState = error
+    ? 'error'
+    : isRecording
+      ? 'listening'
+      : streamingContent || isPlaying
+        ? 'speaking'
+        : loading
+          ? 'thinking'
+          : 'idle';
+
   return (
     <div className="chat">
-      <div className="chat-header">
-        <span className="chat-header-dot" />
-        <span className="chat-header-title">产品体验访谈</span>
-      </div>
-      <MessageList
-        messages={messages}
-        loading={loading}
-        streamingContent={streamingContent}
-        isPlaying={isPlaying}
-        onReplay={handleReplay}
-        onStopAudio={handleStopAudio}
-      />
-      {error && <div className="chat-error" role="alert">{error}</div>}
-      <MessageInput onSend={handleSend} disabled={loading} />
-      <AudioPlayer ref={audioPlayerRef} />
+      <PixelCompanion state={companionState} />
+      <main className="chat-conversation">
+        <div className="chat-header">
+          <span className="chat-header-dot" />
+          <span className="chat-header-title">产品体验访谈</span>
+        </div>
+        <MessageList
+          messages={messages}
+          loading={loading}
+          streamingContent={streamingContent}
+          isPlaying={isPlaying}
+          onReplay={handleReplay}
+          onStopAudio={handleStopAudio}
+        />
+        {error && <div className="chat-error" role="alert">{error}</div>}
+        <MessageInput
+          onSend={handleSend}
+          disabled={loading}
+          onRecordingChange={setIsRecording}
+        />
+      </main>
+      <AudioPlayer ref={audioPlayerRef} onPlaybackStateChange={setIsPlaying} />
     </div>
   );
 }
