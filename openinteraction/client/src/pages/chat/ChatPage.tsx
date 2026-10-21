@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getInterview, sendMessage, sendMessageStream } from '../../api/client';
 import type { Interview, SSEEvent } from '../../api/client';
@@ -10,6 +10,8 @@ import PixelCompanion from '../../components/pixel-companion/PixelCompanion';
 import type { CompanionState } from '../../components/pixel-companion/PixelCompanion';
 import type { Message } from '../../components/message-list/MessageList';
 import './chat.css';
+
+const RiveCompanion = lazy(() => import('../../components/rive-companion/RiveCompanion'));
 
 function ChatPage() {
   const { token } = useParams();
@@ -152,7 +154,9 @@ function ChatPage() {
 
   return (
     <div className="chat">
-      <PixelCompanion state={companionState} />
+      <Suspense fallback={<PixelCompanion state={companionState} />}>
+        <RiveCompanion state={companionState} />
+      </Suspense>
       <main className="chat-conversation">
         <div className="chat-header">
           <span className="chat-header-dot" />
